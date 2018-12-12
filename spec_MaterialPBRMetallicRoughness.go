@@ -45,6 +45,15 @@ func (s *SpecMaterialPBRMetallicRoughness) SetChild(i int, dst, object interface
 func (s *SpecMaterialPBRMetallicRoughness) LenChild() int {
 	return 2
 }
+func (s *SpecMaterialPBRMetallicRoughness) ImpleGetChild(i int, dst interface{}) interface{} {
+	switch i {
+	case 0:
+		return dst.(*MaterialPBRMetallicRoughness).BaseColorTexture
+	case 1:
+		return dst.(*MaterialPBRMetallicRoughness).MetallicRoughnessTexture
+	}
+	return nil
+}
 
 func (s *SpecMaterialPBRMetallicRoughness) Scheme() string {
 	return SCHEME_MATERIAL_PBR_METALLIC_ROUGHNESS

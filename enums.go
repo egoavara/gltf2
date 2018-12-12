@@ -484,7 +484,19 @@ type MinFilter int32
 func (s MinFilter) GL() int32 {
 	return int32(s)
 }
-
+func (s MinFilter) IsMipmap() bool {
+	switch s {
+	case MIN_NEAREST_MIPMAP_NEAREST:
+		fallthrough
+	case MIN_LINEAR_MIPMAP_NEAREST:
+		fallthrough
+	case MIN_NEAREST_MIPMAP_LINEAR:
+		fallthrough
+	case MIN_LINEAR_MIPMAP_LINEAR:
+		return true
+	}
+	return false
+}
 // gl.h
 const (
 	MIN_NEAREST MinFilter = 9728

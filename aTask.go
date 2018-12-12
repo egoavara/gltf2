@@ -445,7 +445,7 @@ func recurMinMax(node *Node, mtx mgl32.Mat4, min, max *mgl32.Vec3) {
 		}
 	}
 	//
-	for _, child := range node.Childrun {
+	for _, child := range node.Children {
 		recurMinMax(child, mtx, min, max)
 	}
 }
@@ -474,7 +474,7 @@ func recurMove(node *Node, mtx mgl32.Mat4, translate mgl32.Vec3) error {
 		}
 	}
 	//
-	for _, child := range node.Childrun {
+	for _, child := range node.Children {
 		if err := recurMove(child, mtx, translate); err != nil {
 			return err
 		}

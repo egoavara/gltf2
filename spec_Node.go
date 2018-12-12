@@ -9,7 +9,7 @@ import (
 type Node struct {
 	Camera   Camera
 	_Parent  *Node
-	Childrun []*Node
+	Children []*Node
 	// TODO : Skin        *SpecGLTFID  `json:"skin"`        // dependancy(Mesh)
 	Matrix      mgl32.Mat4
 	Rotation    mgl32.Quat
@@ -34,7 +34,7 @@ func (s Node) Transform() mgl32.Mat4 {
 
 type SpecNode struct {
 	Camera      *SpecGLTFID  `json:"camera"`
-	Childrun    []SpecGLTFID `json:"childrun"`    // unique, minItem(1)
+	Children    []SpecGLTFID `json:"children"`    // unique, minItem(1)
 	Skin        *SpecGLTFID  `json:"skin"`        // dependancy(Mesh)
 	Matrix      *mgl32.Mat4  `json:"matrix"`      // default(mgl32.Ident4()), exclusive(Translation, Rotation, Scale)
 	Rotation    *mgl32.Vec4  `json:"rotation"`    // default(mgl32.Vec4{0,0,0,1})
@@ -60,8 +60,8 @@ func (s *SpecNode) Syntax(strictness Strictness, root interface{}) error {
 		}
 		fallthrough
 	case LEVEL1:
-		if is, i := isUniqueGLTFID(s.Childrun...); !is {
-			return errors.Errorf("Node.Childrun not unique '%d'", i)
+		if is, i := isUniqueGLTFID(s.Children...); !is {
+			return errors.Errorf("Node.Children not unique '%d'", i)
 		}
 		if s.Skin != nil && s.Mesh == nil {
 			return errors.WithMessage(ErrorGLTFSpec, "Node.Skin dependancy(Mesh)")
@@ -112,15 +112,16 @@ func (s *SpecNode) Link(Root *GLTF, parent interface{}, dst interface{}) error {
 		}
 		dst.(*Node).Camera = Root.Cameras[*s.Camera]
 	}
-	for i, v := range s.Childrun {
+	dst.(*Node).Children = make([]*Node, len(s.Children))
+	for i, v := range s.Children {
 		if !inRange(v, len(Root.Nodes)) {
-			return errors.Errorf("Node.Childrun[%d] linking fail", i)
+			return errors.Errorf("Node.Children[%d] linking fail", i)
 		}
 		if findRecursiveLink(Root.Nodes[v], dst.(*Node)) {
-			return errors.Errorf("Node.Childrun[%d] recursive link", i)
+			return errors.Errorf("Node.Children[%d] recursive link", i)
 		}
 		Root.Nodes[v]._Parent = dst.(*Node)
-		dst.(*Node).Childrun[i] = Root.Nodes[v]
+		dst.(*Node).Children[i] = Root.Nodes[v]
 	}
 	if s.Mesh != nil {
 		if !inRange(*s.Mesh, len(Root.Meshes)) {
@@ -130,6 +131,7 @@ func (s *SpecNode) Link(Root *GLTF, parent interface{}, dst interface{}) error {
 	}
 	return nil
 }
+
 func findRecursiveLink(child, parent *Node) bool {
 	if parent == nil {
 		return false
