@@ -26,31 +26,57 @@ type SpecMaterialPBRMetallicRoughness struct {
 }
 
 func (s *SpecMaterialPBRMetallicRoughness) GetChild(i int) ToGLTF {
-	switch i {
-	case 0:
-		return s.BaseColorTexture
-	case 1:
-		return s.MetallicRoughnessTexture
-	}
-	return nil
+	return s.Children()[i]
 }
 func (s *SpecMaterialPBRMetallicRoughness) SetChild(i int, dst, object interface{}) {
-	switch i {
-	case 0:
-		dst.(*MaterialPBRMetallicRoughness).BaseColorTexture = object.(*TextureInfo)
-	case 1:
-		dst.(*MaterialPBRMetallicRoughness).MetallicRoughnessTexture = object.(*TextureInfo)
+	if dsto, ok := dst.(*MaterialPBRMetallicRoughness); ok {
+		switch s.LenChild() {
+		case 1:
+			if s.BaseColorTexture != nil{
+				dsto.BaseColorTexture = object.(*TextureInfo)
+			}else {
+				dsto.MetallicRoughnessTexture = object.(*TextureInfo)
+			}
+		case 2:
+			switch i {
+			case 0:
+				dsto.BaseColorTexture = object.(*TextureInfo)
+			case 1:
+				dsto.MetallicRoughnessTexture = object.(*TextureInfo)
+			}
+		}
 	}
 }
 func (s *SpecMaterialPBRMetallicRoughness) LenChild() int {
-	return 2
+	return len(s.Children())
+}
+func (s *SpecMaterialPBRMetallicRoughness) Children() []ToGLTF {
+	var res []ToGLTF
+	if s.BaseColorTexture != nil{
+		res = append(res, s.BaseColorTexture)
+	}
+	if s.MetallicRoughnessTexture != nil{
+		res = append(res, s.MetallicRoughnessTexture)
+	}
+	return res
 }
 func (s *SpecMaterialPBRMetallicRoughness) ImpleGetChild(i int, dst interface{}) interface{} {
-	switch i {
-	case 0:
-		return dst.(*MaterialPBRMetallicRoughness).BaseColorTexture
-	case 1:
-		return dst.(*MaterialPBRMetallicRoughness).MetallicRoughnessTexture
+	if dsto, ok := dst.(*MaterialPBRMetallicRoughness); ok {
+		switch s.LenChild() {
+		case 1:
+			if s.BaseColorTexture != nil{
+				return dsto.BaseColorTexture
+			}else {
+				return dsto.MetallicRoughnessTexture
+			}
+		case 2:
+			switch i {
+			case 0:
+				return dsto.BaseColorTexture
+			case 1:
+				return dsto.MetallicRoughnessTexture
+			}
+		}
 	}
 	return nil
 }

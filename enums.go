@@ -551,7 +551,7 @@ func (s Wrap) String() string {
 	return "nil"
 }
 
-type IndexTexCoord uint32
+type IndexTexCoord int32
 
 const (
 	TexCoord0 IndexTexCoord = 0

@@ -8,7 +8,7 @@ import (
 // if define Transform, can't have TRS
 type Node struct {
 	Camera   Camera
-	_Parent  *Node
+	Parent   *Node
 	Children []*Node
 	// TODO : Skin        *SpecGLTFID  `json:"skin"`        // dependancy(Mesh)
 	Matrix      mgl32.Mat4
@@ -120,7 +120,7 @@ func (s *SpecNode) Link(Root *GLTF, parent interface{}, dst interface{}) error {
 		if findRecursiveLink(Root.Nodes[v], dst.(*Node)) {
 			return errors.Errorf("Node.Children[%d] recursive link", i)
 		}
-		Root.Nodes[v]._Parent = dst.(*Node)
+		Root.Nodes[v].Parent = dst.(*Node)
 		dst.(*Node).Children[i] = Root.Nodes[v]
 	}
 	if s.Mesh != nil {
@@ -139,5 +139,5 @@ func findRecursiveLink(child, parent *Node) bool {
 	if parent == child {
 		return true
 	}
-	return findRecursiveLink(child, parent._Parent)
+	return findRecursiveLink(child, parent.Parent)
 }

@@ -88,12 +88,12 @@ func (s *SpecMaterial) To(ctx *parserContext) interface{} {
 }
 
 func (s *SpecMaterial) GetChild(i int) ToGLTF {
-	return s.Childrun()[i]
+	return s.Children()[i]
 }
 
 func (s *SpecMaterial) SetChild(i int, dst, object interface{}) {
 	if dsto, ok := dst.(*Material); ok {
-		switch s.Childrun()[i].(type) {
+		switch s.Children()[i].(type) {
 		case *SpecMaterialPBRMetallicRoughness:
 			dsto.PBRMetallicRoughness = object.(*MaterialPBRMetallicRoughness)
 		case *SpecMaterialNormalTextureInfo:
@@ -107,9 +107,9 @@ func (s *SpecMaterial) SetChild(i int, dst, object interface{}) {
 }
 
 func (s *SpecMaterial) LenChild() int {
-	return len(s.Childrun())
+	return len(s.Children())
 }
-func (s *SpecMaterial) Childrun() (res []ToGLTF) {
+func (s *SpecMaterial) Children() (res []ToGLTF) {
 	if s.PBRMetallicRoughness != nil {
 		res = append(res, s.PBRMetallicRoughness)
 	}
@@ -120,12 +120,12 @@ func (s *SpecMaterial) Childrun() (res []ToGLTF) {
 		res = append(res, s.OcclusionTexture)
 	}
 	if s.EmissiveTexture != nil {
-		res = append(res, s.OcclusionTexture)
+		res = append(res, s.EmissiveTexture)
 	}
 	return res
 }
 func (s *SpecMaterial) ImpleGetChild(i int, dst interface{}) interface{} {
-	switch s.Childrun()[i].(type) {
+	switch s.Children()[i].(type) {
 	case *SpecMaterialPBRMetallicRoughness:
 		return dst.(*Material).PBRMetallicRoughness
 	case *SpecMaterialNormalTextureInfo:

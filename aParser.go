@@ -206,6 +206,10 @@ func Parser() *parser {
 }
 
 func recurSyntax(root, target ToGLTF, strictness Strictness) error {
+	if target == nil{
+		return nil
+	}
+	fmt.Println(target)
 	if err := target.Syntax(strictness, root); err != nil {
 		return err
 	}

@@ -97,7 +97,6 @@ type SpecBuffer struct {
 	Extensions *Extensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
 }
-
 func (s *SpecBuffer) Scheme() string {
 	return SCHEME_BUFFER
 }

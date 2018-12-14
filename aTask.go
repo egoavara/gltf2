@@ -3,6 +3,9 @@ package gltf2
 import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/iamGreedy/essence/align"
+	"github.com/iamGreedy/essence/axis"
+	"github.com/iamGreedy/essence/meter"
+	"github.com/iamGreedy/essence/prefix"
 	"github.com/iamGreedy/glog"
 	"github.com/labstack/gommon/bytes"
 	"net/url"
@@ -126,12 +129,14 @@ var Tasks = struct {
 	Caching Task
 
 	AccessorMinMax Task
-	// TODO ModelLength func(axis axis.Axis, meter meter.Meter, meterRatio float) Task
 	ModelAlign func(x, y, z align.Align) Task
+	ModelScale func(axis axis.Axis, meter meter.Meter) Task
 	// Set bufferView.Target NEED_TO_DEFINE_BUFFER to real gl.h enum
 	AutoBufferTarget Task
 
-	// TODO Clean up
+	// TODO TightPacking
+	// - make buffer view no stride
+	// TODO Clean Task
 	// - Dangling Node
 	// - Unreferenced Buffer, Image
 	// TODO :Trim Task
@@ -144,8 +149,8 @@ var Tasks = struct {
 	// TODO :SplitBuffer Task
 	// Make all Image store in single buffer
 	//
-	// TODO :BuiltInImage
 	// TODO : BuildNormal Task
+	// TODO : BuildTangent Task
 }{
 	HelloWorld: FnPreTask("Hello, World", func(parser *parserContext, gltf *SpecGLTF, logger *glog.Glogger) {
 		logger.Println("Hello, World")
@@ -320,7 +325,12 @@ var Tasks = struct {
 	ModelAlign: func(x align.Align, y align.Align, z align.Align) Task {
 		return &modelAlign{x: x, y: y, z: z}
 	},
-
+	ModelScale: func(axis axis.Axis, meter meter.Meter) Task {
+		return &modelScale{
+			len:  meter,
+			axis: axis,
+		}
+	},
 	AutoBufferTarget: FnPreTask("Auto Buffer Target", func(parser *parserContext, gltf *SpecGLTF, logger *glog.Glogger) {
 		for _, mesh := range gltf.Meshes {
 			for _, prim := range mesh.Primitives {
@@ -347,16 +357,14 @@ var Tasks = struct {
 								logger.Printf("gltf.BufferView[%d] Expected EBO, but VBO detected", *bvi)
 							}
 						}
-
 					}
 				}
 			}
 		}
-		//
 		for i := range gltf.BufferViews {
 			if gltf.BufferViews[i].Target == nil {
 				gltf.BufferViews[i].Target = new(BufferType)
-				*gltf.BufferViews[i].Target = ELEMENT_ARRAY_BUFFER
+				*gltf.BufferViews[i].Target = ARRAY_BUFFER
 				if gltf.BufferViews[i].Name != nil {
 					logger.Printf("gltf.BufferView['%s'] Target : VBO", *gltf.BufferViews[i].Name)
 				} else {
@@ -383,8 +391,11 @@ func (s *modelAlign) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Gl
 		} else {
 			logger.Printf("glTF.Nodes[%d] ", i)
 		}
-		//
 		inner := logger.Indent()
+		if node.Parent !=nil{
+			inner.Printf("Not Root node")
+			continue
+		}
 		var (
 			min, max mgl32.Vec3
 		)
@@ -500,4 +511,92 @@ func diff(a align.Align, min, max float32) float32 {
 		}
 	}
 	return 0
+}
+
+type modelScale struct {
+	axis axis.Axis
+	len  meter.Meter
+}
+
+func (s *modelScale) TaskName() string {
+	return "Model Scale"
+}
+func (s *modelScale) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
+	for i, node := range gltf.Nodes {
+		if len(node.Name) > 0 {
+			logger.Printf("glTF.Nodes['%s'] ", node.Name)
+		} else {
+			logger.Printf("glTF.Nodes[%d] ", i)
+		}
+		//
+		inner := logger.Indent()
+		if node.Parent !=nil{
+			inner.Printf("Not Root node")
+			continue
+		}
+		var (
+			min, max mgl32.Vec3
+		)
+		recurMinMax(node, mgl32.Ident4(), &min, &max)
+		inner.Printf("Min : %v", min)
+		inner.Printf("Max : %v", max)
+		//
+		var scale float32
+		switch s.axis {
+		case axis.X:
+			scale = s.len.Convert(prefix.No).F32() / mgl32.Abs(max.X()-min.X())
+		case axis.Y:
+			scale = s.len.Convert(prefix.No).F32() / mgl32.Abs(max.Y()-min.Y())
+		case axis.Z:
+			scale = s.len.Convert(prefix.No).F32() / mgl32.Abs(max.Z()-min.Z())
+
+		}
+		if mgl32.FloatEqualThreshold(scale, 1, 0.001){
+			inner.Printf("Scaled node")
+			continue
+		}
+		inner.Printf("Scale : %v", scale)
+		if err := recurScale(node, mgl32.Ident4(), mgl32.Vec3{scale, scale, scale}); err != nil {
+			inner.Printf("%e", err)
+			return err
+		}
+		inner.Printf("Scale Complete")
+	}
+	return nil
+}
+func recurScale(node *Node, mtx mgl32.Mat4, scale mgl32.Vec3) error {
+	mtx = mtx.Mul4(node.Transform())
+	trs := mtx.Mul4x1(scale.Vec4(1)).Vec3()
+	//
+	if node.Mesh != nil {
+		for _, prim := range node.Mesh.Primitives {
+			posattr := prim.Attributes[POSITION]
+			poss := posattr.MustSliceMapping(new([]mgl32.Vec3), true, true).([]mgl32.Vec3)
+			//
+			for i, v := range poss {
+				poss[i] = mgl32.Vec3{
+					v[0] * scale[0],
+					v[1] * scale[1],
+					v[2] * scale[2],
+				}
+			}
+			if len(posattr.Min) > 0 {
+				posattr.Min[0] *= trs.X()
+				posattr.Min[1] *= trs.Y()
+				posattr.Min[2] *= trs.Z()
+			}
+			if len(posattr.Max) > 0 {
+				posattr.Max[0] *= trs.X()
+				posattr.Max[1] *= trs.Y()
+				posattr.Max[2] *= trs.Z()
+			}
+		}
+	}
+	//
+	for _, child := range node.Children {
+		if err := recurScale(child, mtx, scale); err != nil {
+			return err
+		}
+	}
+	return nil
 }
