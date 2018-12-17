@@ -8,6 +8,7 @@ import (
 	"github.com/iamGreedy/essence/prefix"
 	"github.com/iamGreedy/glog"
 	"github.com/labstack/gommon/bytes"
+	"math"
 	"net/url"
 )
 
@@ -397,7 +398,8 @@ func (s *modelAlign) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Gl
 			continue
 		}
 		var (
-			min, max mgl32.Vec3
+			min = mgl32.Vec3{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+			max = mgl32.Vec3{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 		)
 		recurMinMax(node, mgl32.Ident4(), &min, &max)
 		inner.Printf("Min : %v", min)
@@ -430,7 +432,8 @@ func recurMinMax(node *Node, mtx mgl32.Mat4, min, max *mgl32.Vec3) {
 				tempmax mgl32.Vec3
 			)
 			if len(posattr.Min) < 0 || len(posattr.Max) < 0 {
-
+				//TODO
+				panic("TODO")
 			} else {
 				tempmin = mtx.Mul4x1(mgl32.Vec3{posattr.Min[0], posattr.Min[1], posattr.Min[2]}.Vec4(1)).Vec3()
 				tempmax = mtx.Mul4x1(mgl32.Vec3{posattr.Max[0], posattr.Max[1], posattr.Max[2]}.Vec4(1)).Vec3()
@@ -462,7 +465,6 @@ func recurMinMax(node *Node, mtx mgl32.Mat4, min, max *mgl32.Vec3) {
 }
 func recurMove(node *Node, mtx mgl32.Mat4, translate mgl32.Vec3) error {
 	mtx = mtx.Mul4(node.Transform())
-	trs := mtx.Mul4x1(translate.Vec4(1)).Vec3()
 	//
 	if node.Mesh != nil {
 		for _, prim := range node.Mesh.Primitives {
@@ -470,17 +472,17 @@ func recurMove(node *Node, mtx mgl32.Mat4, translate mgl32.Vec3) error {
 			poss := posattr.MustSliceMapping(new([]mgl32.Vec3), true, true).([]mgl32.Vec3)
 			//
 			for i, v := range poss {
-				poss[i] = v.Add(trs)
+				poss[i] = v.Add(translate)
 			}
 			if len(posattr.Min) > 0 {
-				posattr.Min[0] += trs.X()
-				posattr.Min[1] += trs.Y()
-				posattr.Min[2] += trs.Z()
+				posattr.Min[0] += translate.X()
+				posattr.Min[1] += translate.Y()
+				posattr.Min[2] += translate.Z()
 			}
 			if len(posattr.Max) > 0 {
-				posattr.Max[0] += trs.X()
-				posattr.Max[1] += trs.Y()
-				posattr.Max[2] += trs.Z()
+				posattr.Max[0] += translate.X()
+				posattr.Max[1] += translate.Y()
+				posattr.Max[2] += translate.Z()
 			}
 		}
 	}
@@ -535,7 +537,8 @@ func (s *modelScale) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Gl
 			continue
 		}
 		var (
-			min, max mgl32.Vec3
+			min = mgl32.Vec3{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
+			max = mgl32.Vec3{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}
 		)
 		recurMinMax(node, mgl32.Ident4(), &min, &max)
 		inner.Printf("Min : %v", min)
@@ -566,8 +569,6 @@ func (s *modelScale) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Gl
 }
 func recurScale(node *Node, mtx mgl32.Mat4, scale mgl32.Vec3) error {
 	mtx = mtx.Mul4(node.Transform())
-	trs := mtx.Mul4x1(scale.Vec4(1)).Vec3()
-	//
 	if node.Mesh != nil {
 		for _, prim := range node.Mesh.Primitives {
 			posattr := prim.Attributes[POSITION]
@@ -581,14 +582,14 @@ func recurScale(node *Node, mtx mgl32.Mat4, scale mgl32.Vec3) error {
 				}
 			}
 			if len(posattr.Min) > 0 {
-				posattr.Min[0] *= trs.X()
-				posattr.Min[1] *= trs.Y()
-				posattr.Min[2] *= trs.Z()
+				posattr.Min[0] *= scale.X()
+				posattr.Min[1] *= scale.Y()
+				posattr.Min[2] *= scale.Z()
 			}
 			if len(posattr.Max) > 0 {
-				posattr.Max[0] *= trs.X()
-				posattr.Max[1] *= trs.Y()
-				posattr.Max[2] *= trs.Z()
+				posattr.Max[0] *= scale.X()
+				posattr.Max[1] *= scale.Y()
+				posattr.Max[2] *= scale.Z()
 			}
 		}
 	}
