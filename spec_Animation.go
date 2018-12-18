@@ -61,7 +61,7 @@ func (s *SpecAnimation) SetChild(i int, dst, object interface{}) {
 	if chleng := len(s.Channels); i < chleng {
 		dst.(*Animation).Channels[i] = object.(*AnimationChannel)
 	} else {
-		dst.(*Animation).Channels[i-chleng] = object.(*AnimationChannel)
+		dst.(*Animation).Samplers[i-chleng] = object.(*AnimationSampler)
 	}
 }
 func (s *SpecAnimation) LenChild() int {

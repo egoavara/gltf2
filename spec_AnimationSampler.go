@@ -33,7 +33,9 @@ func (s *SpecAnimationSampler) Syntax(strictness Strictness, root interface{}) e
 			return errors.Errorf("AnimationSampler.Output required")
 		}
 		if s.Output != nil && inRange(*s.Output, len(root.(*SpecGLTF).Accessors)) {
-			if acc := root.(*SpecGLTF).Accessors[*s.Output]; (acc.ComponentType != nil && *acc.ComponentType == FLOAT) || (acc.Normalized != nil && *acc.Normalized && acc.ComponentType != nil && *acc.ComponentType != FLOAT) {
+
+			if acc := root.(*SpecGLTF).Accessors[*s.Output]; !((acc.ComponentType != nil && *acc.ComponentType == FLOAT) ||
+				(acc.Normalized != nil && *acc.Normalized)) {
 				return errors.Errorf("AnimationSampler.Output -> Accessor.ComponentType must(FLOAT or normalized integer)")
 			}
 		}

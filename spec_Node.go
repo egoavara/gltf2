@@ -23,6 +23,7 @@ type Node struct {
 }
 
 func (s Node) Transform() mgl32.Mat4 {
+
 	if s.Matrix == mgl32.Ident4() {
 		return mgl32.Translate3D(s.Translation[0], s.Translation[1], s.Translation[2]).
 			Mul4(s.Rotation.Mat4()).

@@ -28,7 +28,7 @@ func (s *PerspectiveCamera) CameraType() CameraType {
 
 type SpecCameraPerspective struct {
 	AspectRatio *float32    `json:"aspectRatio"` // larger(0.0)
-	Yfov        *float32    `json:"aspectRatio"` // required
+	Yfov        *float32    `json:"yfov"` // required
 	Znear       *float32    `json:"znear"`       // required, larger(0.0)
 	Zfar        *float32    `json:"zfar"`        // larger(0.0) larger(znear) : not spec but need
 	Extensions  *Extensions `json:"extensions,omitempty"`
