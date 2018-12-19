@@ -22,6 +22,8 @@ func (s *SpecAnimationChannelTarget) Syntax(strictness Strictness, root interfac
 	case LEVEL3:
 		fallthrough
 	case LEVEL2:
+		// TODO
+		// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#animations target.Path constraint
 		fallthrough
 	case LEVEL1:
 		if s.Path == nil {
