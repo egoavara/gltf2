@@ -10,6 +10,9 @@ type Mesh struct {
 	Name       string
 	Extensions *Extensions
 	Extras     *Extras
+
+	// None spec
+	UserData interface{}
 }
 
 type SpecMesh struct {

@@ -527,8 +527,10 @@ func (s *modelScale) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Gl
 	}
 	return nil
 }
+
 func uTransform(node *Node, trans mgl32.Mat4)  {
-	recurTransform(node, mgl32.Ident4(), trans)
+
+	recurTransform(node, node.Transform(), trans)
 }
 func recurTransform(node *Node, mtx mgl32.Mat4, trans mgl32.Mat4) {
 	mtx = mtx.Mul4(node.Transform())
@@ -539,6 +541,10 @@ func recurTransform(node *Node, mtx mgl32.Mat4, trans mgl32.Mat4) {
 			poss := posattr.MustSliceMapping(new([]mgl32.Vec3), true, true).([]mgl32.Vec3)
 			//
 			for i, v := range poss {
+				//m := mtx.Mul4x1(v.Vec4(1))
+				//mt := trans.Mul4x1(m)
+				//mti := mtx.Inv().Mul4x1(mt)
+				//poss[i] = mti.Vec3()
 				poss[i] = temp.Mul4x1(v.Vec4(1)).Vec3()
 			}
 			if len(posattr.Min) > 0 {

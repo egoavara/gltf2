@@ -11,6 +11,8 @@ import (
 type Camera interface {
 	CameraType() CameraType
 	View(monitorSize image.Point) mgl32.Mat4
+	UserData() interface{}
+	SetUserData(data interface{})
 }
 
 type SpecCamera struct {

@@ -8,6 +8,8 @@ type AnimationSampler struct {
 	Input         *Accessor
 	Interpolation Interpolation
 	Output        *Accessor
+	// None spec
+	UserData interface{}
 }
 
 type SpecAnimationSampler struct {

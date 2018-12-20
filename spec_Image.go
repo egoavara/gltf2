@@ -1,14 +1,12 @@
 package gltf2
 
 import (
+	"github.com/iamGreedy/essence/req"
 	"github.com/pkg/errors"
 	"image"
 	"image/draw"
 	"image/jpeg"
 	"image/png"
-	"io"
-	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 )
@@ -20,7 +18,11 @@ type Image interface {
 
 	Load(useCache bool) (img *image.RGBA, err error)
 	Cache() *image.RGBA
+	ThrowCache()
 	IsCached() bool
+
+	UserData() interface{}
+	SetUserData(data interface{})
 }
 type URIImage struct {
 	// nullable
@@ -31,8 +33,18 @@ type URIImage struct {
 	name       string
 	extensions *Extensions
 	extras     *Extras
+	// None spec
+	userData interface{}
 }
 
+
+func (s *URIImage) UserData() interface{} {
+	return s.userData
+}
+
+func (s *URIImage) SetUserData(data interface{}) {
+	s.userData = data
+}
 func (s *URIImage) Name() string {
 	return s.name
 }
@@ -47,37 +59,13 @@ func (s *URIImage) Load(useCache bool) (img *image.RGBA, err error) {
 		return s.Cache(), nil
 	}
 	// setup 'img'
-	path := s.URI.Data()
-	var rd io.Reader
-	switch path.Scheme {
-	case "http":
-		// http server
-		fallthrough
-	case "https":
-		// http TLS server
-		var res *http.Response
-		res, err = http.Get(path.String())
-		if err != nil {
-			return nil, err
-		}
-		defer res.Body.Close()
-		rd = res.Body
-	case "":
-		fallthrough
-	case "file":
-		// local file
-		var f *os.File
-		f, err = os.Open(path.Path)
-		if err != nil {
-			return nil, err
-		}
-		defer f.Close()
-		rd = f
-	default:
-		return nil, errors.Errorf("Unsupported scheme '%s'", path.Scheme)
+	rdc, err := req.Standard.Request(s.URI.Data())
+	if err != nil {
+		return nil, err
 	}
+	defer rdc.Close()
 	// image decode
-	temp, _, err := image.Decode(rd)
+	temp, _, err := image.Decode(rdc)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +82,9 @@ func (s *URIImage) Load(useCache bool) (img *image.RGBA, err error) {
 func (s *URIImage) Cache() *image.RGBA {
 	return s.cache
 }
+func (s *URIImage) ThrowCache() {
+	s.cache = nil
+}
 func (s *URIImage) IsCached() bool {
 	return s.cache != nil
 }
@@ -108,8 +99,17 @@ type BufferImage struct {
 	name       string
 	extensions *Extensions
 	extras     *Extras
+	// None spec
+	userData interface{}
 }
 
+func (s *BufferImage) UserData() interface{} {
+	return s.userData
+}
+
+func (s *BufferImage) SetUserData(data interface{}) {
+	s.userData = data
+}
 func (s *BufferImage) Name() string {
 	return s.name
 }
@@ -146,6 +146,9 @@ func (s *BufferImage) Load(useCache bool) (img *image.RGBA, err error) {
 }
 func (s *BufferImage) Cache() *image.RGBA {
 	return s.cache
+}
+func (s *BufferImage) ThrowCache() {
+	s.cache = nil
 }
 func (s *BufferImage) IsCached() bool {
 	return s.cache != nil

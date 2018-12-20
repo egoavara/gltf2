@@ -9,6 +9,10 @@ type Sampler struct {
 	Name       string
 	Extensions *Extensions
 	Extras     *Extras
+
+
+	// None spec
+	UserData interface{}
 }
 
 func DefaultSampler() *Sampler {

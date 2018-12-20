@@ -1,10 +1,9 @@
 package gltf2
 
 import (
+	"github.com/iamGreedy/essence/req"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 )
@@ -23,6 +22,8 @@ type Buffer struct {
 	Name       string
 	Extensions *Extensions
 	Extras     *Extras
+	// None spec
+	UserData interface{}
 }
 
 func (s *Buffer) Load(useCache bool) (bts []byte, err error) {
@@ -37,39 +38,14 @@ func (s *Buffer) Load(useCache bool) (bts []byte, err error) {
 		}
 		bts = make([]byte, *s.ByteLength)
 	} else {
-		path := s.URI.Data()
-		switch path.Scheme {
-		case "http":
-			// http server
-			fallthrough
-		case "https":
-			// http TLS server
-			var res *http.Response
-			res, err = http.Get(path.String())
-			if err != nil {
-				return nil, err
-			}
-			defer res.Body.Close()
-			bts, err = ioutil.ReadAll(res.Body)
-			if err != nil {
-				return nil, err
-			}
-		case "":
-			fallthrough
-		case "file":
-			// local file
-			var f *os.File
-			f, err = os.Open(path.Path)
-			if err != nil {
-				return nil, err
-			}
-			defer f.Close()
-			bts, err = ioutil.ReadAll(f)
-			if err != nil {
-				return nil, err
-			}
-		default:
-			return nil, errors.Errorf("Unsupported scheme '%s'", path.Scheme)
+		rdc, err := req.Standard.Request(s.URI.Data())
+		if err != nil {
+			return nil, err
+		}
+		defer rdc.Close()
+		bts, err = ioutil.ReadAll(rdc)
+		if err != nil {
+			return nil, err
 		}
 	}
 	// length limit
@@ -85,6 +61,9 @@ func (s *Buffer) Load(useCache bool) (bts []byte, err error) {
 }
 func (s *Buffer) Cache() []byte {
 	return s.cache
+}
+func (s *Buffer) ThrowCache() {
+	s.cache = nil
 }
 func (s *Buffer) IsCached() bool {
 	return s.cache != nil

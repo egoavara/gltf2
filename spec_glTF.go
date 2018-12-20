@@ -24,6 +24,9 @@ type GLTF struct {
 	Animations         []*Animation
 	Extensions         *Extensions
 	Extras             *Extras
+
+	// None spec
+	UserData interface{}
 }
 
 type SpecGLTF struct {

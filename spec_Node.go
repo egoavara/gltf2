@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// if define Transform, can't have TRS
+// if define Matrix, can't have TRS
 type Node struct {
 	Camera   Camera
 	Parent   *Node
@@ -20,10 +20,12 @@ type Node struct {
 	Name        string
 	Extensions  *Extensions `json:"extensions,omitempty"`
 	Extras      *Extras     `json:"extras,omitempty"`
+
+	// None spec
+	UserData interface{}
 }
 
 func (s Node) Transform() mgl32.Mat4 {
-
 	if s.Matrix == mgl32.Ident4() {
 		return mgl32.Translate3D(s.Translation[0], s.Translation[1], s.Translation[2]).
 			Mul4(s.Rotation.Mat4()).

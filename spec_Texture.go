@@ -8,6 +8,9 @@ type Texture struct {
 	Name       string      `json:"name,omitempty"`
 	Extensions *Extensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
+
+	// None spec
+	UserData interface{}
 }
 type SpecTexture struct {
 	Sampler    *SpecGLTFID `json:"sampler"`

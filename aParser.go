@@ -29,7 +29,6 @@ type parser struct {
 	logger *glog.Glogger
 	//
 	pres []PreTask
-	//whiles map[string][]WhilePlugin
 	posts []PostTask
 }
 
@@ -54,12 +53,12 @@ func (s *parser) Strictness(strictness Strictness) *parser {
 	s.strictness = strictness
 	return s
 }
-func (s *parser) Plugin(plugins ...Task) *parser {
-	for _, plugin := range plugins {
-		if prp, ok := plugin.(PreTask); ok {
+func (s *parser) Tasks(tasks ...Task) *parser {
+	for _, task := range tasks {
+		if prp, ok := task.(PreTask); ok {
 			s.pres = append(s.pres, prp)
 		}
-		if pop, ok := plugin.(PostTask); ok {
+		if pop, ok := task.(PostTask); ok {
 			s.posts = append(s.posts, pop)
 		}
 	}
@@ -143,14 +142,14 @@ func (s *parser) Parse() (*GLTF, error) {
 	}
 	s.logger.Println("json decode complete")
 	//====================================================//
-	// pre plugin
+	// pre Task
 	if s.pres != nil {
-		s.logger.Println("PrePlugins start")
+		s.logger.Println("PreTasks start")
 		for i, pre := range s.pres {
 			s.logger.Printf("PreTask(%d/%d) '%s'\n", i+1, len(s.pres), pre.TaskName())
 			pre.PreLoad(ctx, s.src, s.logger.Indent())
 		}
-		s.logger.Println("PrePlugins complete")
+		s.logger.Println("PreTasks complete")
 	}
 	//====================================================//
 	// Syntax check
@@ -177,11 +176,11 @@ func (s *parser) Parse() (*GLTF, error) {
 	//====================================================//
 	if s.posts != nil {
 		s.logger.Println("PostTask start")
-		// post plugin
+		// post Task
 		for i, post := range s.posts {
 			s.logger.Printf("PostTask(%d/%d) '%s'\n", i+1, len(s.posts), post.TaskName())
 			if err := post.PostLoad(ctx, s.dst, s.logger.Indent()); err != nil {
-				s.setCauseError(ErrorPlugin, errors.WithMessage(err, fmt.Sprintf("plugin name : %s", post.TaskName())))
+				s.setCauseError(ErrorTask, errors.WithMessage(err, fmt.Sprintf("Task name : %s", post.TaskName())))
 				return nil, s.Error()
 			}
 		}

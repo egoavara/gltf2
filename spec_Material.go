@@ -17,6 +17,9 @@ type Material struct {
 	AlphaMode            AlphaMode                     `json:"alphaMode"`       // default(OPAQUE)
 	AlphaCutoff          float32                       `json:"alphaCutoff"`     // default(0.5), minimum(0.0), dependency(AlphaMode) ! ignore(dependency) : cause default
 	DoubleSided          bool                          `json:"doubleSided"`     // default(false)
+
+	// None spec
+	UserData interface{}
 }
 
 type SpecMaterial struct {

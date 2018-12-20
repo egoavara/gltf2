@@ -12,6 +12,9 @@ type MeshPrimitive struct {
 	Targets    []map[AttributeKey]*Accessor
 	Extensions *Extensions
 	Extras     *Extras
+
+	// None spec
+	UserData interface{}
 }
 
 type SpecMeshPrimitive struct {

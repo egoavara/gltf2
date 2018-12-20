@@ -9,6 +9,8 @@ type AnimationChannel struct {
 	Target     *AnimationChannelTarget `json:"target"`  // required
 	Extensions *Extensions             `json:"extensions,omitempty"`
 	Extras     *Extras                 `json:"extras,omitempty"`
+	// None spec
+	UserData interface{}
 }
 
 type SpecAnimationChannel struct {

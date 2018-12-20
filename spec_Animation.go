@@ -10,6 +10,8 @@ type Animation struct {
 	Name       string              `json:"name,omitempty"`
 	Extensions *Extensions         `json:"extensions,omitempty"`
 	Extras     *Extras             `json:"extras,omitempty"`
+	// None spec
+	UserData interface{}
 }
 
 type SpecAnimation struct {
@@ -32,10 +34,10 @@ func (s *SpecAnimation) Syntax(strictness Strictness, root interface{}) error {
 		fallthrough
 	case LEVEL1:
 		if s.Channels == nil {
-			return errors.WithMessage(ErrorGLTFSpec, "Animation.Channels required")
+			return errors.WithMessage(ErrorGLTFSpec, "NewPlayer.Channels required")
 		}
 		if s.Samplers == nil {
-			return errors.WithMessage(ErrorGLTFSpec, "Animation.Samplers required")
+			return errors.WithMessage(ErrorGLTFSpec, "NewPlayer.Samplers required")
 		}
 	}
 	return nil

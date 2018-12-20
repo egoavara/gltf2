@@ -18,6 +18,8 @@ type BufferView struct {
 	Name       string
 	Extensions *Extensions
 	Extras     *Extras
+	// None spec
+	UserData interface{}
 }
 
 func (s *BufferView) Load() ([]byte, error) {

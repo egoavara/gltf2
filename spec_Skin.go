@@ -12,6 +12,9 @@ type Skin struct {
 	Name                *string      `json:"name,omitempty"`
 	Extensions          *Extensions  `json:"extensions,omitempty"`
 	Extras              *Extras      `json:"extras,omitempty"`
+
+	// None spec
+	UserData interface{}
 }
 
 func (s *Skin) UnmarshalJSON(data []byte) error {

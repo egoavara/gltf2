@@ -14,8 +14,17 @@ type PerspectiveCamera struct {
 	Zfar        float32
 	Extensions  *Extensions `json:"extensions,omitempty"`
 	Extras      *Extras     `json:"extras,omitempty"`
+
+	// None spec
+	userData interface{}
 }
 
+func (s *PerspectiveCamera) UserData() interface{} {
+	return s.userData
+}
+func (s *PerspectiveCamera) SetUserData(data interface{}) {
+	s.userData =data
+}
 func (s *PerspectiveCamera) View(monitorSize image.Point) mgl32.Mat4 {
 	if s.AspectRatio == nil {
 		return perspectiveInfinitable(s.Yfov, float32(monitorSize.X)/float32(monitorSize.Y), s.Znear, s.Zfar)

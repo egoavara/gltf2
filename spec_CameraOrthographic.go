@@ -13,6 +13,16 @@ type OrthographicCamera struct {
 	Zfar       float32
 	Extensions *Extensions
 	Extras     *Extras
+	// None spec
+	userData interface{}
+}
+
+func (s *OrthographicCamera) UserData() interface{} {
+	return s.userData
+}
+
+func (s *OrthographicCamera) SetUserData(data interface{}) {
+	s.userData =data
 }
 
 func (s *OrthographicCamera) View(monitorSize image.Point) mgl32.Mat4 {

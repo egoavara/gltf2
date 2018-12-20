@@ -19,6 +19,8 @@ type Accessor struct {
 	Name       string
 	Extensions *Extensions
 	Extras     *Extras
+	// None spec
+	UserData interface{}
 }
 
 // [ Unsafe ] 		: careful to use
@@ -145,6 +147,9 @@ func (s *Accessor) SliceMapping(out_ptrslice interface{}, typeSafety, componentS
 	header := (*reflect.SliceHeader)(unsafe.Pointer(vl.Pointer()))
 	header.Data = uintptr(unsafe.Pointer(&bts[0]))
 	header.Len = s.Count
+	if !typeSafety{
+		header.Len *= s.Type.Count()
+	}
 	header.Cap = header.Len
 	return vl.Elem().Interface(), nil
 }
