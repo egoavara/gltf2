@@ -176,6 +176,9 @@ type SpecAccessor struct {
 	Extras        *Extras         `json:"extras,omitempty"`
 }
 
+func (s *SpecAccessor) GetExtensions() *Extensions {
+	return s.Extensions
+}
 func (s *SpecAccessor) Scheme() string {
 	return SCHEME_ACCESSOR
 }

@@ -34,10 +34,13 @@ type SpecAsset struct {
 	Extras     *Extras          `json:"extras,omitempty"`
 }
 
+func (s *SpecAsset) GetExtensions() *Extensions {
+	return s.Extensions
+}
+
 func (s *SpecAsset) Scheme() string {
 	return SCHEME_ASSET
 }
-
 func (s *SpecAsset) Syntax(strictness Strictness, root interface{}) error {
 	switch strictness {
 	case LEVEL3:
@@ -51,7 +54,6 @@ func (s *SpecAsset) Syntax(strictness Strictness, root interface{}) error {
 	}
 	return nil
 }
-
 func (s *SpecAsset) To(ctx *parserContext) interface{} {
 	res := new(Asset)
 	if s.Copyright != nil {

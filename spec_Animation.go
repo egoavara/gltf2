@@ -22,10 +22,12 @@ type SpecAnimation struct {
 	Extras     *Extras                `json:"extras,omitempty"`
 }
 
+func (s *SpecAnimation) GetExtensions() *Extensions {
+	return s.Extensions
+}
 func (s *SpecAnimation) Scheme() string {
 	return SCHEME_ANIMATION
 }
-
 func (s *SpecAnimation) Syntax(strictness Strictness, root interface{}) error {
 	switch strictness {
 	case LEVEL3:
@@ -42,7 +44,6 @@ func (s *SpecAnimation) Syntax(strictness Strictness, root interface{}) error {
 	}
 	return nil
 }
-
 func (s *SpecAnimation) To(ctx *parserContext) interface{} {
 	res := new(Animation)
 	res.Channels = make([]*AnimationChannel, len(s.Channels))
@@ -51,7 +52,6 @@ func (s *SpecAnimation) To(ctx *parserContext) interface{} {
 	res.Extras = s.Extras
 	return res
 }
-
 func (s *SpecAnimation) GetChild(i int) ToGLTF {
 	if chleng := len(s.Channels); i < chleng {
 		return &s.Channels[i]

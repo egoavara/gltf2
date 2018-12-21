@@ -20,6 +20,9 @@ type SpecAnimationChannel struct {
 	Extras     *Extras                     `json:"extras,omitempty"`
 }
 
+func (s *SpecAnimationChannel) GetExtensions() *Extensions {
+	return s.Extensions
+}
 func (s *SpecAnimationChannel) Scheme() string {
 	return SCHEME_ANIMATION_CHANNEL
 }
@@ -37,14 +40,10 @@ func (s *SpecAnimationChannel) Syntax(strictness Strictness, root interface{}) e
 			return errors.WithMessage(ErrorGLTFSpec, "AnimationChannel.Target required")
 		}
 	}
-	if err := s.Target.Syntax(strictness, nil); err != nil {
-		return err
-	}
 	return nil
 }
 func (s *SpecAnimationChannel) To(ctx *parserContext) interface{} {
 	res := new(AnimationChannel)
-	res.Target = s.Target.To(nil).(*AnimationChannelTarget)
 	res.Extras = s.Extras
 	res.Extensions = s.Extensions
 	return res
@@ -54,8 +53,21 @@ func (s *SpecAnimationChannel) Link(Root *GLTF, parent interface{}, dst interfac
 		return errors.Errorf("AnimationChannel.Sampler linking fail")
 	}
 	dst.(*AnimationChannel).Sampler = parent.(*Animation).Samplers[*s.Sampler]
-	if err := s.Target.Link(Root, dst, dst.(*AnimationChannel).Target); err != nil {
-		return err
-	}
 	return nil
+}
+
+func (s *SpecAnimationChannel) GetChild(i int) ToGLTF {
+	return s.Target
+}
+func (s *SpecAnimationChannel) SetChild(i int, dst, object interface{}) {
+	dst.(*AnimationChannel).Target = object.(*AnimationChannelTarget)
+}
+func (s *SpecAnimationChannel) LenChild() int {
+	if s.Target == nil {
+		return 0
+	}
+	return 1
+}
+func (s *SpecAnimationChannel) ImpleGetChild(i int, dst interface{}) interface{} {
+	return dst.(*AnimationChannel).Target
 }

@@ -6,8 +6,8 @@ import (
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/glTF.schema.json
 type GLTF struct {
-	ExtensionsUsed     []Extension
-	ExtensionsRequired []Extension
+	ExtensionsUsed     []*Extension
+	ExtensionsRequired []*Extension
 	Accessors          []*Accessor
 	Asset              Asset
 	Buffers            []*Buffer
@@ -30,8 +30,8 @@ type GLTF struct {
 }
 
 type SpecGLTF struct {
-	ExtensionsUsed     []Extension      `json:"extensionsUsed,omitempty"`     // minitem(1), unique
-	ExtensionsRequired []Extension      `json:"extensionsRequired,omitempty"` // minitem(1), unique
+	ExtensionsUsed     []string         `json:"extensionsUsed,omitempty"`     // minitem(1), unique
+	ExtensionsRequired []string         `json:"extensionsRequired,omitempty"` // minitem(1), unique
 	Accessors          []SpecAccessor   `json:"accessors,omitempty"`          // minitem(1)
 	Asset              *SpecAsset       `json:"asset,omitempty"`              // required
 	Buffers            []SpecBuffer     `json:"buffers,omitempty"`            // minitem(1)
@@ -149,10 +149,10 @@ func (s *SpecGLTF) Syntax(strictness Strictness, root interface{}) error {
 		fallthrough
 	case LEVEL2:
 		if ok, data := isUniqueExtension(s.ExtensionsUsed...); !ok {
-			return errors.Errorf("GLTF.ExtensionsUsed is unique, but duplicate item '%s'", string(data))
+			return errors.Errorf("GLTF.ExtensionsUsed is unique, but duplicate item '%s'", data)
 		}
 		if ok, data := isUniqueExtension(s.ExtensionsRequired...); !ok {
-			return errors.Errorf("GLTF.ExtensionsUsed is unique, but duplicate item '%s'", string(data))
+			return errors.Errorf("GLTF.ExtensionsUsed is unique, but duplicate item '%s'", data)
 		}
 		fallthrough
 	case LEVEL1:
@@ -164,13 +164,16 @@ func (s *SpecGLTF) Syntax(strictness Strictness, root interface{}) error {
 		if s.Asset == nil {
 			return errors.Errorf("GLTF.Asset required")
 		}
+		if ok, name := extExists(s.ExtensionsRequired...); !ok {
+			return errors.Errorf("GLTF.ExtensionsRequired has unknown '%s'", name)
+		}
 	}
 	return nil
 }
 func (s *SpecGLTF) To(ctx *parserContext) interface{} {
 	res := new(GLTF)
-	res.ExtensionsUsed = s.ExtensionsUsed
-	res.ExtensionsRequired = s.ExtensionsRequired
+	res.ExtensionsUsed = extNames(s.ExtensionsUsed...)
+	res.ExtensionsRequired = extNames(s.ExtensionsUsed...)
 	//
 	res.Accessors = make([]*Accessor, len(s.Accessors))
 	res.Buffers = make([]*Buffer, len(s.Buffers))

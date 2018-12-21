@@ -5,13 +5,21 @@ import (
 )
 
 type AnimationChannelTarget struct {
-	Node *Node `json:"node"`
-	Path Path  `json:"path"` // required
+	Node       *Node
+	Path       Path
+	Extensions *Extensions
+	Extras     *Extras
 }
 
 type SpecAnimationChannelTarget struct {
-	Node *SpecGLTFID `json:"node"`
-	Path *Path       `json:"path"` // required
+	Node       *SpecGLTFID `json:"node"`
+	Path       *Path       `json:"path"` // required
+	Extensions *Extensions `json:"extensions,omitempty"`
+	Extras     *Extras     `json:"extras,omitempty"`
+}
+
+func (s *SpecAnimationChannelTarget) GetExtensions() *Extensions {
+	return s.Extensions
 }
 
 func (s *SpecAnimationChannelTarget) Scheme() string {
@@ -35,6 +43,8 @@ func (s *SpecAnimationChannelTarget) Syntax(strictness Strictness, root interfac
 func (s *SpecAnimationChannelTarget) To(ctx *parserContext) interface{} {
 	res := new(AnimationChannelTarget)
 	res.Path = *s.Path
+	res.Extensions = s.Extensions
+	res.Extras = s.Extras
 	return res
 }
 func (s *SpecAnimationChannelTarget) Link(Root *GLTF, parent interface{}, dst interface{}) error {

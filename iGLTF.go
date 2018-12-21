@@ -5,7 +5,10 @@ type ToGLTF interface {
 	Syntax(strictness Strictness, root interface{}) error
 	To(ctx *parserContext) interface{}
 }
+type HaveExtensions interface {
+	GetExtensions() *Extensions
 
+}
 type ChildrunToGLTF interface {
 	ToGLTF
 
@@ -46,4 +49,6 @@ const (
 	SCHEME_ANIMATION_SAMPLER               = "animation/sampler"
 	SCHEME_ANIMATION_CHANNEL               = "animation/channel"
 	SCHEME_ANIMATION_CHANNEL_TARGET        = "animation/channel/target"
+	//
+	SCHEME_EXTENSION = "extension"
 )

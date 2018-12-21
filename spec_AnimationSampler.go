@@ -8,6 +8,8 @@ type AnimationSampler struct {
 	Input         *Accessor
 	Interpolation Interpolation
 	Output        *Accessor
+	Extensions    *Extensions
+	Extras        *Extras
 	// None spec
 	UserData interface{}
 }
@@ -16,8 +18,13 @@ type SpecAnimationSampler struct {
 	Input         *SpecGLTFID    `json:"input"`         // required
 	Interpolation *Interpolation `json:"interpolation"` // default(LINEAR)
 	Output        *SpecGLTFID    `json:"output"`        // required, AnimationSampler.Output -> Accessor.ComponentType must(FLOAT or normalized integer)
+	Extensions    *Extensions    `json:"extensions,omitempty"`
+	Extras        *Extras        `json:"extras,omitempty"`
 }
 
+func (s *SpecAnimationSampler) GetExtensions() *Extensions {
+	return s.Extensions
+}
 func (s *SpecAnimationSampler) Scheme() string {
 	return SCHEME_ANIMATION_SAMPLER
 }
@@ -51,7 +58,8 @@ func (s *SpecAnimationSampler) To(ctx *parserContext) interface{} {
 	} else {
 		res.Interpolation = *s.Interpolation
 	}
-
+	res.Extensions = s.Extensions
+	res.Extras = s.Extras
 	return res
 }
 func (s *SpecAnimationSampler) Link(Root *GLTF, parent interface{}, dst interface{}) error {

@@ -138,9 +138,15 @@ func (s *parser) Parse() (*GLTF, error) {
 	s.logger.Println("json decode start...")
 	if err := dec.Decode(s.src); err != nil {
 		s.setCauseError(ErrorJSON, err)
-		return nil, err
+		return nil, s.Error()
 	}
 	s.logger.Println("json decode complete")
+	//====================================================//
+	// extension used
+	for _, v := range s.src.ExtensionsRequired {
+		s.setCauseError(ErrorParser, errors.Errorf("Extension : '%s' not support", v))
+		return nil, s.Error()
+	}
 	//====================================================//
 	// pre Task
 	if s.pres != nil {
@@ -154,6 +160,7 @@ func (s *parser) Parse() (*GLTF, error) {
 	//====================================================//
 	// Syntax check
 	s.logger.Println("syntax check")
+	s.logger.Printf("syntax strictness : %v \n", s.strictness)
 	if err := recurSyntax(s.src, s.src, s.strictness); err != nil {
 		s.setCauseError(ErrorGLTFSpec, err)
 		return nil, s.Error()
@@ -245,22 +252,6 @@ func recurLink(root *GLTF, parent, data interface{}, target ToGLTF) error {
 	}
 	return nil
 }
-
-//func recurWhile(data interface{}, target ToGLTF, plugins map[string][]WhilePlugin) (err error, pluginName string){
-//	for _, plugin := range plugins[target.Scheme()] {
-//		if err := plugin.WhileLoad(target, data); err != nil{
-//			return err, plugin.TaskName()
-//		}
-//	}
-//	if tc, ok := target.(ChildrunToGLTF); ok{
-//		for i := 0; i < tc.LenChild(); i++ {
-//			if err, pluginName = recurWhile(tc.ImpleGetChild(i, data), tc.GetChild(i), plugins); err != nil{
-//				return err, pluginName
-//			}
-//		}
-//	}
-//	return nil, ""
-//}
 
 type parserContext struct {
 	ref *parser
