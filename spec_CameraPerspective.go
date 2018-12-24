@@ -19,11 +19,19 @@ type PerspectiveCamera struct {
 	userData interface{}
 }
 
+func (s *PerspectiveCamera) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
+func (s *PerspectiveCamera) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *PerspectiveCamera) UserData() interface{} {
 	return s.userData
 }
 func (s *PerspectiveCamera) SetUserData(data interface{}) {
-	s.userData =data
+	s.userData = data
 }
 func (s *PerspectiveCamera) View(monitorSize image.Point) mgl32.Mat4 {
 	if s.AspectRatio == nil {
@@ -36,12 +44,16 @@ func (s *PerspectiveCamera) CameraType() CameraType {
 }
 
 type SpecCameraPerspective struct {
-	AspectRatio *float32    `json:"aspectRatio"` // larger(0.0)
-	Yfov        *float32    `json:"yfov"` // required
-	Znear       *float32    `json:"znear"`       // required, larger(0.0)
-	Zfar        *float32    `json:"zfar"`        // larger(0.0) larger(znear) : not spec but need
-	Extensions  *Extensions `json:"extensions,omitempty"`
-	Extras      *Extras     `json:"extras,omitempty"`
+	AspectRatio *float32        `json:"aspectRatio"` // larger(0.0)
+	Yfov        *float32        `json:"yfov"`        // required
+	Znear       *float32        `json:"znear"`       // required, larger(0.0)
+	Zfar        *float32        `json:"zfar"`        // larger(0.0) larger(znear) : not spec but need
+	Extensions  *SpecExtensions `json:"extensions,omitempty"`
+	Extras      *Extras         `json:"extras,omitempty"`
+}
+
+func (s *SpecCameraPerspective) GetExtension() *SpecExtensions {
+	return s.Extensions
 }
 
 func (s *SpecCameraPerspective) Scheme() string {
@@ -86,6 +98,5 @@ func (s *SpecCameraPerspective) To(ctx *parserContext) interface{} {
 		res.Zfar = *s.Zfar
 	}
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }

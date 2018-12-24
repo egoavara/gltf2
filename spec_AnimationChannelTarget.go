@@ -11,14 +11,18 @@ type AnimationChannelTarget struct {
 	Extras     *Extras
 }
 
+func (s *AnimationChannelTarget) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecAnimationChannelTarget struct {
 	Node       *SpecGLTFID `json:"node"`
 	Path       *Path       `json:"path"` // required
-	Extensions *Extensions `json:"extensions,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
 }
 
-func (s *SpecAnimationChannelTarget) GetExtensions() *Extensions {
+func (s *SpecAnimationChannelTarget) GetExtension() *SpecExtensions {
 	return s.Extensions
 }
 
@@ -43,7 +47,6 @@ func (s *SpecAnimationChannelTarget) Syntax(strictness Strictness, root interfac
 func (s *SpecAnimationChannelTarget) To(ctx *parserContext) interface{} {
 	res := new(AnimationChannelTarget)
 	res.Path = *s.Path
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }

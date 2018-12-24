@@ -12,12 +12,20 @@ type MaterialOcclusionTextureInfo struct {
 	Extras     *Extras
 }
 
+func (s *MaterialOcclusionTextureInfo) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecMaterialOcclusionTextureInfo struct {
-	Index      *SpecGLTFID    `json:"index"`    // required, minimum(0)
-	TexCoord   *IndexTexCoord `json:"texCoord"` // default(0), minimum(0)
-	Strength   *float32       `json:"scale"`    // default(1.0), range(0.0, 1.0)
-	Extensions *Extensions    `json:"extensions,omitempty"`
-	Extras     *Extras        `json:"extras,omitempty"`
+	Index      *SpecGLTFID     `json:"index"`    // required, minimum(0)
+	TexCoord   *IndexTexCoord  `json:"texCoord"` // default(0), minimum(0)
+	Strength   *float32        `json:"scale"`    // default(1.0), range(0.0, 1.0)
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
+}
+
+func (s *SpecMaterialOcclusionTextureInfo) GetExtension() *SpecExtensions {
+	return s.Extensions
 }
 
 func (s *SpecMaterialOcclusionTextureInfo) Scheme() string {
@@ -53,7 +61,6 @@ func (s *SpecMaterialOcclusionTextureInfo) To(ctx *parserContext) interface{} {
 		res.Strength = *s.Strength
 	}
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }
 func (s *SpecMaterialOcclusionTextureInfo) Link(Root *GLTF, parent interface{}, dst interface{}) error {

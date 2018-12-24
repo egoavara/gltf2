@@ -16,11 +16,11 @@ const (
 	//
 	// + unique slice item
 	// + slice item count
-	// ! Camera/Perspective : + Argument large, etc
-	// ! Camera/Orthographic : + Argument large, etc
+	// ! CameraSetting/Perspective : + Argument large, etc
+	// ! CameraSetting/Orthographic : + Argument large, etc
 	// ! Material/pbrMetallicRoughness : + Argument range, etc
 	LEVEL2 Strictness = 2
-	// Follow Specification
+	// Follow Specifier
 	//
 	//
 	// + max, min limitation

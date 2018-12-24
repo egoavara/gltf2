@@ -12,7 +12,7 @@ type GLTF struct {
 	Asset              Asset
 	Buffers            []*Buffer
 	BufferViews        []*BufferView
-	Cameras            []Camera
+	Cameras            []*Camera
 	Images             []Image
 	Materials          []*Material
 	Meshes             []*Mesh
@@ -27,6 +27,10 @@ type GLTF struct {
 
 	// None spec
 	UserData interface{}
+}
+
+func (s *GLTF) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
 }
 
 type SpecGLTF struct {
@@ -47,8 +51,8 @@ type SpecGLTF struct {
 	Textures           []SpecTexture    `json:"textures,omitempty"`           // minitem(1)
 	Animations         []SpecAnimation  `json:"animations,omitempty"`         // minitem(1)
 	// TODO : Skins              []Skin       `json:"skins,omitempty"`              // minitem(1)
-	Extensions *Extensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 	//
 	cache []int
 }
@@ -140,6 +144,9 @@ func (s *SpecGLTF) getSchemeIndex(i int) (scheme string, schemeIndex int) {
 	return
 }
 
+func (s *SpecGLTF) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecGLTF) Scheme() string {
 	return SCHEME_GLTF
 }
@@ -178,7 +185,7 @@ func (s *SpecGLTF) To(ctx *parserContext) interface{} {
 	res.Accessors = make([]*Accessor, len(s.Accessors))
 	res.Buffers = make([]*Buffer, len(s.Buffers))
 	res.BufferViews = make([]*BufferView, len(s.BufferViews))
-	res.Cameras = make([]Camera, len(s.Cameras))
+	res.Cameras = make([]*Camera, len(s.Cameras))
 	res.Images = make([]Image, len(s.Images))
 	res.Materials = make([]*Material, len(s.Materials))
 	res.Meshes = make([]*Mesh, len(s.Meshes))
@@ -188,7 +195,6 @@ func (s *SpecGLTF) To(ctx *parserContext) interface{} {
 	res.Textures = make([]*Texture, len(s.Textures))
 	res.Animations = make([]*Animation, len(s.Animations))
 	//
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }
@@ -201,7 +207,7 @@ func (s *SpecGLTF) Link(Root *GLTF, parent interface{}, dst interface{}) error {
 	}
 	return nil
 }
-func (s *SpecGLTF) GetChild(i int) ToGLTF {
+func (s *SpecGLTF) GetChild(i int) Specifier {
 	scheme, schemeIndex := s.getSchemeIndex(i)
 	switch scheme {
 	case SCHEME_ACCESSOR:
@@ -245,7 +251,7 @@ func (s *SpecGLTF) SetChild(i int, dst, object interface{}) {
 	case SCHEME_BUFFERVIEW:
 		dst.(*GLTF).BufferViews[schemeIndex] = object.(*BufferView)
 	case SCHEME_CAMERA:
-		dst.(*GLTF).Cameras[schemeIndex] = object.(Camera)
+		dst.(*GLTF).Cameras[schemeIndex] = object.(*Camera)
 	case SCHEME_IMAGE:
 		dst.(*GLTF).Images[schemeIndex] = object.(Image)
 	case SCHEME_MATERIAL:

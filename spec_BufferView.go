@@ -22,6 +22,10 @@ type BufferView struct {
 	UserData interface{}
 }
 
+func (s *BufferView) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 func (s *BufferView) Load() ([]byte, error) {
 
 	var bts []byte
@@ -51,10 +55,13 @@ type SpecBufferView struct {
 	ByteStride *int        `json:"byteStride"` // range(4, 252, step=4) ! default(0) : not spec, but can be
 	Target     *BufferType `json:"target"`     //
 	Name       *string     `json:"name,omitempty"`
-	Extensions *Extensions `json:"extensions,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
 }
 
+func (s *SpecBufferView) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecBufferView) Scheme() string {
 	return SCHEME_BUFFERVIEW
 }
@@ -109,7 +116,6 @@ func (s *SpecBufferView) To(ctx *parserContext) interface{} {
 	if s.Name != nil {
 		res.Name = *s.Name
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }

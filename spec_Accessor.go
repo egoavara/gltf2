@@ -23,6 +23,10 @@ type Accessor struct {
 	UserData interface{}
 }
 
+func (s *Accessor) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 // [ Unsafe ] 		: careful to use
 // [ Reflect ] 		: using reflect, it can be cause performance issue
 //
@@ -172,11 +176,11 @@ type SpecAccessor struct {
 	Min           []float32       `json:"min,omitempty"`        // rangeitem(1, 16)
 	Sparse        *AccessorSparse `json:"sparse,omitempty"`
 	Name          *string         `json:"name,omitempty"`
-	Extensions    *Extensions     `json:"extensions,omitempty"`
+	Extensions    *SpecExtensions     `json:"extensions,omitempty"`
 	Extras        *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecAccessor) GetExtensions() *Extensions {
+func (s *SpecAccessor) GetExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecAccessor) Scheme() string {
@@ -236,7 +240,6 @@ func (s *SpecAccessor) To(ctx *parserContext) interface{} {
 	} else {
 		res.Name = *s.Name
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }

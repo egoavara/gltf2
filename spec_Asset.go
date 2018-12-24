@@ -17,6 +17,10 @@ type Asset struct {
 	Extras     *Extras
 }
 
+func (s *Asset) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 func (s *Asset) String() string {
 	bts, err := json.Marshal(s)
 	if err != nil {
@@ -30,11 +34,11 @@ type SpecAsset struct {
 	Generator  *string          `json:"generator,omitempty"`
 	Version    *version.Version `json:"version"` // required
 	MinVersion *version.Version `json:"minVersion,omitempty"`
-	Extensions *Extensions      `json:"extensions,omitempty"`
+	Extensions *SpecExtensions      `json:"extensions,omitempty"`
 	Extras     *Extras          `json:"extras,omitempty"`
 }
 
-func (s *SpecAsset) GetExtensions() *Extensions {
+func (s *SpecAsset) GetExtension() *SpecExtensions {
 	return s.Extensions
 }
 
@@ -65,6 +69,5 @@ func (s *SpecAsset) To(ctx *parserContext) interface{} {
 	res.Version = *s.Version
 	res.MinVersion = s.MinVersion
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }

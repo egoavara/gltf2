@@ -12,14 +12,21 @@ type MaterialNormalTextureInfo struct {
 	Extras     *Extras
 }
 
-type SpecMaterialNormalTextureInfo struct {
-	Index      *SpecGLTFID    `json:"index"`    // required, minimum(0)
-	TexCoord   *IndexTexCoord `json:"texCoord"` // default(0), minimum(0)
-	Scale      *float32       `json:"scale"`    // default(1.0), minimum(0)
-	Extensions *Extensions    `json:"extensions,omitempty"`
-	Extras     *Extras        `json:"extras,omitempty"`
+func (s *MaterialNormalTextureInfo) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
 }
 
+type SpecMaterialNormalTextureInfo struct {
+	Index      *SpecGLTFID     `json:"index"`    // required, minimum(0)
+	TexCoord   *IndexTexCoord  `json:"texCoord"` // default(0), minimum(0)
+	Scale      *float32        `json:"scale"`    // default(1.0), minimum(0)
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
+}
+
+func (s *SpecMaterialNormalTextureInfo) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecMaterialNormalTextureInfo) Scheme() string {
 	return SCHEME_MATERIAL_NORMAL_TEXTUREINFO
 }
@@ -53,7 +60,6 @@ func (s *SpecMaterialNormalTextureInfo) To(ctx *parserContext) interface{} {
 		res.Scale = *s.Scale
 	}
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }
 func (s *SpecMaterialNormalTextureInfo) Link(Root *GLTF, parent interface{}, dst interface{}) error {

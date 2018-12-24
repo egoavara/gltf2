@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 )
 
-type Buffers []Buffer
-
 // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#buffers-and-buffer-views
 // Implementation Note : Limit of ByteLength
 type Buffer struct {
@@ -24,6 +22,10 @@ type Buffer struct {
 	Extras     *Extras
 	// None spec
 	UserData interface{}
+}
+
+func (s *Buffer) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
 }
 
 func (s *Buffer) Load(useCache bool) (bts []byte, err error) {
@@ -70,11 +72,15 @@ func (s *Buffer) IsCached() bool {
 }
 
 type SpecBuffer struct {
-	URI        *URI        `json:"URI, omitempty"`
-	ByteLength *int        `json:"ByteLength"` // required, min(1)
-	Name       *string     `json:"name,omitempty"`
-	Extensions *Extensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	URI        *URI            `json:"URI, omitempty"`
+	ByteLength *int            `json:"ByteLength"` // required, min(1)
+	Name       *string         `json:"name,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
+}
+
+func (s *SpecBuffer) GetExtension() *SpecExtensions {
+	return s.Extensions
 }
 func (s *SpecBuffer) Scheme() string {
 	return SCHEME_BUFFER
@@ -114,7 +120,6 @@ func (s *SpecBuffer) To(ctx *parserContext) interface{} {
 	if s.Name != nil {
 		res.Name = *s.Name
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }

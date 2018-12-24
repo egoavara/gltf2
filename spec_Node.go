@@ -7,7 +7,7 @@ import (
 
 // if define Matrix, can't have TRS
 type Node struct {
-	Camera   Camera
+	Camera   *Camera
 	Parent   *Node
 	Children []*Node
 	// TODO : Skin        *SpecGLTFID  `json:"skin"`        // dependancy(Mesh)
@@ -23,6 +23,10 @@ type Node struct {
 
 	// None spec
 	UserData interface{}
+}
+
+func (s *Node) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
 }
 
 func (s Node) Transform() mgl32.Mat4 {
@@ -46,8 +50,12 @@ type SpecNode struct {
 	Weights     []float32    `json:"weights"`     // minItem(1), dependancy(Mesh)
 	Mesh        *SpecGLTFID  `json:"mesh"`        //
 	Name        *string      `json:"name,omitempty"`
-	Extensions  *Extensions  `json:"extensions,omitempty"`
+	Extensions  *SpecExtensions  `json:"extensions,omitempty"`
 	Extras      *Extras      `json:"extras,omitempty"`
+}
+
+func (s *SpecNode) GetExtension() *SpecExtensions {
+	return s.Extensions
 }
 
 func (s *SpecNode) Scheme() string {
@@ -104,14 +112,13 @@ func (s *SpecNode) To(ctx *parserContext) interface{} {
 	if s.Weights != nil {
 		res.Weights = s.Weights
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }
 func (s *SpecNode) Link(Root *GLTF, parent interface{}, dst interface{}) error {
 	if s.Camera != nil {
 		if !inRange(*s.Camera, len(Root.Cameras)) {
-			return errors.Errorf("Node.Camera linking fail")
+			return errors.Errorf("Node.CameraSetting linking fail")
 		}
 		dst.(*Node).Camera = Root.Cameras[*s.Camera]
 	}

@@ -12,14 +12,22 @@ type Texture struct {
 	// None spec
 	UserData interface{}
 }
+
+func (s *Texture) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecTexture struct {
 	Sampler    *SpecGLTFID `json:"sampler"`
 	Source     *SpecGLTFID `json:"source"`
 	Name       *string     `json:"name,omitempty"`
-	Extensions *Extensions `json:"extensions,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
 }
 
+func (s *SpecTexture) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecTexture) Scheme() string {
 	return SCHEME_TEXTURE
 }
@@ -40,7 +48,6 @@ func (s *SpecTexture) To(ctx *parserContext) interface{} {
 	} else {
 		res.Name = *s.Name
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }

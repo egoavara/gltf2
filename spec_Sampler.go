@@ -10,9 +10,12 @@ type Sampler struct {
 	Extensions *Extensions
 	Extras     *Extras
 
-
 	// None spec
 	UserData interface{}
+}
+
+func (s *Sampler) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
 }
 
 func DefaultSampler() *Sampler {
@@ -31,10 +34,13 @@ type SpecSampler struct {
 	WrapT     *Wrap      `json:"wrapT"`     // notspec default(REPEAT) : [https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtm]
 
 	Name       *string     `json:"name,omitempty"`
-	Extensions *Extensions `json:"extensions,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
 }
 
+func (s *SpecSampler) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecSampler) Scheme() string {
 	return SCHEME_SAMPLER
 }

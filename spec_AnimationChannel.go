@@ -13,14 +13,18 @@ type AnimationChannel struct {
 	UserData interface{}
 }
 
+func (s *AnimationChannel) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecAnimationChannel struct {
 	Sampler    *SpecGLTFID                 `json:"sampler"` // required
 	Target     *SpecAnimationChannelTarget `json:"target"`  // required
-	Extensions *Extensions                 `json:"extensions,omitempty"`
+	Extensions *SpecExtensions             `json:"extensions,omitempty"`
 	Extras     *Extras                     `json:"extras,omitempty"`
 }
 
-func (s *SpecAnimationChannel) GetExtensions() *Extensions {
+func (s *SpecAnimationChannel) GetExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecAnimationChannel) Scheme() string {
@@ -45,7 +49,6 @@ func (s *SpecAnimationChannel) Syntax(strictness Strictness, root interface{}) e
 func (s *SpecAnimationChannel) To(ctx *parserContext) interface{} {
 	res := new(AnimationChannel)
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }
 func (s *SpecAnimationChannel) Link(Root *GLTF, parent interface{}, dst interface{}) error {
@@ -56,7 +59,7 @@ func (s *SpecAnimationChannel) Link(Root *GLTF, parent interface{}, dst interfac
 	return nil
 }
 
-func (s *SpecAnimationChannel) GetChild(i int) ToGLTF {
+func (s *SpecAnimationChannel) GetChild(i int) Specifier {
 	return s.Target
 }
 func (s *SpecAnimationChannel) SetChild(i int, dst, object interface{}) {

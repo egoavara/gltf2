@@ -14,15 +14,19 @@ type Animation struct {
 	UserData interface{}
 }
 
+func (s *Animation) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecAnimation struct {
 	Channels   []SpecAnimationChannel `json:"channels"` // required, minItem(1)
 	Samplers   []SpecAnimationSampler `json:"samplers"` // required, minItem(1)
 	Name       *string                `json:"name,omitempty"`
-	Extensions *Extensions            `json:"extensions,omitempty"`
+	Extensions *SpecExtensions        `json:"extensions,omitempty"`
 	Extras     *Extras                `json:"extras,omitempty"`
 }
 
-func (s *SpecAnimation) GetExtensions() *Extensions {
+func (s *SpecAnimation) GetExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecAnimation) Scheme() string {
@@ -48,11 +52,10 @@ func (s *SpecAnimation) To(ctx *parserContext) interface{} {
 	res := new(Animation)
 	res.Channels = make([]*AnimationChannel, len(s.Channels))
 	res.Samplers = make([]*AnimationSampler, len(s.Samplers))
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }
-func (s *SpecAnimation) GetChild(i int) ToGLTF {
+func (s *SpecAnimation) GetChild(i int) Specifier {
 	if chleng := len(s.Channels); i < chleng {
 		return &s.Channels[i]
 	} else {

@@ -24,6 +24,7 @@ type Image interface {
 	UserData() interface{}
 	SetUserData(data interface{})
 }
+
 type URIImage struct {
 	// nullable
 	cache *image.RGBA
@@ -37,6 +38,9 @@ type URIImage struct {
 	userData interface{}
 }
 
+func (s *URIImage) SetExtension(extensions *Extensions) {
+	s.extensions = extensions
+}
 
 func (s *URIImage) UserData() interface{} {
 	return s.userData
@@ -103,6 +107,10 @@ type BufferImage struct {
 	userData interface{}
 }
 
+func (s *BufferImage) SetExtension(extensions *Extensions) {
+	s.extensions = extensions
+}
+
 func (s *BufferImage) UserData() interface{} {
 	return s.userData
 }
@@ -155,12 +163,16 @@ func (s *BufferImage) IsCached() bool {
 }
 
 type SpecImage struct {
-	URI        *URI        `json:"URI"`        // exclusive_require(URI, bufferView)
-	MimeType   *MimeType   `json:"mimeType"`   //
-	BufferView *SpecGLTFID `json:"bufferView"` // exclusive_require(URI, bufferView), dependency(MimeType)
-	Name       *string     `json:"name,omitempty"`
-	Extensions *Extensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	URI        *URI            `json:"URI"`        // exclusive_require(URI, bufferView)
+	MimeType   *MimeType       `json:"mimeType"`   //
+	BufferView *SpecGLTFID     `json:"bufferView"` // exclusive_require(URI, bufferView), dependency(MimeType)
+	Name       *string         `json:"name,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
+}
+
+func (s *SpecImage) GetExtension() *SpecExtensions {
+	return s.Extensions
 }
 
 func (s *SpecImage) Scheme() string {
@@ -201,7 +213,6 @@ func (s *SpecImage) To(ctx *parserContext) interface{} {
 		if s.Name != nil {
 			res.name = *s.Name
 		}
-		res.extensions = s.Extensions
 		res.extras = s.Extras
 
 		return res
@@ -213,7 +224,6 @@ func (s *SpecImage) To(ctx *parserContext) interface{} {
 		if s.Name != nil {
 			res.name = *s.Name
 		}
-		res.extensions = s.Extensions
 		res.extras = s.Extras
 
 		return res

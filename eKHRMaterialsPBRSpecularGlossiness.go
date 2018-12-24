@@ -44,7 +44,7 @@ func (s *SpecKHRMaterialsPBRSpecularGlossiness) To(ctx *parserContext) interface
 	return res
 }
 
-func (s *SpecKHRMaterialsPBRSpecularGlossiness) GetChild(i int) ToGLTF {
+func (s *SpecKHRMaterialsPBRSpecularGlossiness) GetChild(i int) Specifier {
 	return s.Children()[i]
 }
 func (s *SpecKHRMaterialsPBRSpecularGlossiness) SetChild(i int, dst, object interface{}) {
@@ -67,7 +67,7 @@ func (s *SpecKHRMaterialsPBRSpecularGlossiness) SetChild(i int, dst, object inte
 func (s *SpecKHRMaterialsPBRSpecularGlossiness) LenChild() int {
 	return len(s.Children())
 }
-func (s *SpecKHRMaterialsPBRSpecularGlossiness) Children() (res []ToGLTF) {
+func (s *SpecKHRMaterialsPBRSpecularGlossiness) Children() (res []Specifier) {
 	if s.DiffuseTexture != nil {
 		res = append(res, s.DiffuseTexture)
 	}

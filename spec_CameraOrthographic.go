@@ -17,6 +17,14 @@ type OrthographicCamera struct {
 	userData interface{}
 }
 
+func (s *OrthographicCamera) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
+func (s *OrthographicCamera) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *OrthographicCamera) UserData() interface{} {
 	return s.userData
 }
@@ -37,8 +45,12 @@ type SpecCameraOrthographic struct {
 	Ymag       *float32    `json:"ymag"`  // required, not(0.0)
 	Znear      *float32    `json:"znear"` // required, minimum(0.0)
 	Zfar       *float32    `json:"zfar"`  // required, larger(0.0), larger(znear)
-	Extensions *Extensions `json:"extensions,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
 	Extras     *Extras     `json:"extras,omitempty"`
+}
+
+func (s *SpecCameraOrthographic) GetExtension() *SpecExtensions {
+	return s.Extensions
 }
 
 func (s *SpecCameraOrthographic) Scheme() string {
@@ -89,6 +101,5 @@ func (s *SpecCameraOrthographic) To(ctx *parserContext) interface{} {
 	res.Znear = *s.Znear
 	res.Zfar = *s.Zfar
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }

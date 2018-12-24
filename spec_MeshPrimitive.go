@@ -17,16 +17,23 @@ type MeshPrimitive struct {
 	UserData interface{}
 }
 
+func (s *MeshPrimitive) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecMeshPrimitive struct {
 	Attributes map[AttributeKey]SpecGLTFID   `json:"attributes"` // required, minItem(1)
 	Indices    *SpecGLTFID                   `json:"indices"`    //
 	Material   *SpecGLTFID                   `json:"material"`   //
 	Mode       *Mode                         `json:"mode"`       // default(TRIANGLES)
 	Targets    []map[AttributeKey]SpecGLTFID `json:"targets"`    // [*]allow(POSITION, NORMAL, TANGENT)
-	Extensions *Extensions                   `json:"extensions,omitempty"`
+	Extensions *SpecExtensions                   `json:"extensions,omitempty"`
 	Extras     *Extras                       `json:"extras,omitempty"`
 }
 
+func (s *SpecMeshPrimitive) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecMeshPrimitive) Scheme() string {
 	return SCHEME_MESH_PRIMITIVE
 }
@@ -75,7 +82,6 @@ func (s *SpecMeshPrimitive) To(ctx *parserContext) interface{} {
 		res.Mode = *s.Mode
 	}
 	res.Extras = s.Extras
-	res.Extensions = s.Extensions
 	return res
 }
 func (s *SpecMeshPrimitive) Link(Root *GLTF, parent interface{}, dst interface{}) error {

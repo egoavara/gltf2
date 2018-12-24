@@ -1,29 +1,5 @@
 package gltf2
 
-type ToGLTF interface {
-	Scheme() string
-	Syntax(strictness Strictness, root interface{}) error
-	To(ctx *parserContext) interface{}
-}
-type HaveExtensions interface {
-	GetExtensions() *Extensions
-
-}
-type ChildrunToGLTF interface {
-	ToGLTF
-
-	GetChild(i int) ToGLTF
-	SetChild(i int, dst, object interface{})
-	LenChild() int
-	ImpleGetChild(i int, dst interface{}) interface{}
-}
-type LinkToGLTF interface {
-	ToGLTF
-	// s.Link(Root, s.To())
-	//              ^ important!
-	Link(Root *GLTF, parent interface{}, dst interface{}) error
-}
-
 const (
 	SCHEME_GLTF                            = "glTF"
 	SCHEME_BUFFER                          = "buffer"
@@ -49,6 +25,5 @@ const (
 	SCHEME_ANIMATION_SAMPLER               = "animation/sampler"
 	SCHEME_ANIMATION_CHANNEL               = "animation/channel"
 	SCHEME_ANIMATION_CHANNEL_TARGET        = "animation/channel/target"
-	//
-	SCHEME_EXTENSION = "extension"
+	SCHEME_EXTENSION                       = "extension"
 )

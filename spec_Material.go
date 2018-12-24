@@ -22,9 +22,13 @@ type Material struct {
 	UserData interface{}
 }
 
+func (s *Material) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecMaterial struct {
 	Name                 *string                           `json:"name,omitempty"`
-	Extensions           *Extensions                       `json:"extensions,omitempty"`
+	Extensions           *SpecExtensions                   `json:"extensions,omitempty"`
 	Extras               *Extras                           `json:"extras,omitempty"`
 	PBRMetallicRoughness *SpecMaterialPBRMetallicRoughness `json:"pbrMetallicRoughness"`
 	NormalTexture        *SpecMaterialNormalTextureInfo    `json:"normalTexture"`
@@ -36,6 +40,9 @@ type SpecMaterial struct {
 	DoubleSided          *bool                             `json:"doubleSided"`     // default(false)
 }
 
+func (s *SpecMaterial) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecMaterial) Scheme() string {
 	return SCHEME_MATERIAL
 }
@@ -65,7 +72,6 @@ func (s *SpecMaterial) To(ctx *parserContext) interface{} {
 	if s.Name != nil {
 		res.Name = *s.Name
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	if s.EmissiveFactor == nil {
 		res.EmissiveFactor = mgl32.Vec3{0, 0, 0}
@@ -90,10 +96,9 @@ func (s *SpecMaterial) To(ctx *parserContext) interface{} {
 	return res
 }
 
-func (s *SpecMaterial) GetChild(i int) ToGLTF {
+func (s *SpecMaterial) GetChild(i int) Specifier {
 	return s.Children()[i]
 }
-
 func (s *SpecMaterial) SetChild(i int, dst, object interface{}) {
 	if dsto, ok := dst.(*Material); ok {
 		switch s.Children()[i].(type) {
@@ -108,11 +113,10 @@ func (s *SpecMaterial) SetChild(i int, dst, object interface{}) {
 		}
 	}
 }
-
 func (s *SpecMaterial) LenChild() int {
 	return len(s.Children())
 }
-func (s *SpecMaterial) Children() (res []ToGLTF) {
+func (s *SpecMaterial) Children() (res []Specifier) {
 	if s.PBRMetallicRoughness != nil {
 		res = append(res, s.PBRMetallicRoughness)
 	}

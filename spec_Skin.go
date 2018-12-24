@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TODO
 type Skin struct {
 	InverseBindMatrices *SpecGLTFID  `json:"inverseBindMatrices"`
 	Skeleton            *SpecGLTFID  `json:"skeleton"`

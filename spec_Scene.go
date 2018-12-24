@@ -13,13 +13,20 @@ type Scene struct {
 	UserData interface{}
 }
 
+func (s *Scene) SetExtension(extensions *Extensions) {
+	s.Extensions = extensions
+}
+
 type SpecScene struct {
 	Nodes      []SpecGLTFID `json:"nodes"` // unique, minItem(1)
 	Name       *string      `json:"name,omitempty"`
-	Extensions *Extensions  `json:"extensions,omitempty"`
+	Extensions *SpecExtensions  `json:"extensions,omitempty"`
 	Extras     *Extras      `json:"extras,omitempty"`
 }
 
+func (s *SpecScene) GetExtension() *SpecExtensions {
+	return s.Extensions
+}
 func (s *SpecScene) Scheme() string {
 	return SCHEME_SCENE
 }
@@ -43,7 +50,6 @@ func (s *SpecScene) To(ctx *parserContext) interface{} {
 	if s.Name != nil {
 		res.Name = *s.Name
 	}
-	res.Extensions = s.Extensions
 	res.Extras = s.Extras
 	return res
 }

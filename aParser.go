@@ -17,6 +17,8 @@ type parser struct {
 	dst    *GLTF
 	src    *SpecGLTF
 	parsed bool
+	// extension support
+	exts []*Extension
 	//
 	cause error
 	err   error
@@ -62,6 +64,10 @@ func (s *parser) Tasks(tasks ...Task) *parser {
 			s.posts = append(s.posts, pop)
 		}
 	}
+	return s
+}
+func (s *parser) Extensions(exts ... *Extension) *parser {
+	s.exts = append(s.exts, exts...)
 	return s
 }
 func (s *parser) Directory(path string) *parser {
@@ -144,8 +150,10 @@ func (s *parser) Parse() (*GLTF, error) {
 	//====================================================//
 	// extension used
 	for _, v := range s.src.ExtensionsRequired {
-		s.setCauseError(ErrorParser, errors.Errorf("Extension : '%s' not support", v))
-		return nil, s.Error()
+		if !inExtension(v, s.exts){
+			s.setCauseError(ErrorParser, errors.Errorf("Extension : '%s' not support", v))
+			return nil, s.Error()
+		}
 	}
 	//====================================================//
 	// pre Task
@@ -211,14 +219,32 @@ func Parser() *parser {
 	return res
 }
 
-func recurSyntax(root, target ToGLTF, strictness Strictness) error {
+func recurSyntax(root, target Specifier, strictness Strictness) error {
 	if target == nil{
 		return nil
 	}
 	if err := target.Syntax(strictness, root); err != nil {
 		return err
 	}
-	if tc, ok := target.(ChildrunToGLTF); ok {
+	//// extension
+	if g, ok := target.(ExtensionGetter); ok{
+		if ext := g.GetExtension(); ext != nil{
+			for k, v := range *ext {
+				fmt.Println(k)
+				fmt.Println(v)
+			}
+		}
+	//	exts := g.GetExtension()
+	//	for k, v := range *exts {
+	//		if ext := extName(k); ext != nil{
+	//			ext.
+	//		}else {
+	//
+	//		}
+	//	}
+	}
+	//
+	if tc, ok := target.(Parents); ok {
 		for i := 0; i < tc.LenChild(); i++ {
 			if err := recurSyntax(root, tc.GetChild(i), strictness); err != nil {
 				return err
@@ -227,8 +253,8 @@ func recurSyntax(root, target ToGLTF, strictness Strictness) error {
 	}
 	return nil
 }
-func recurTo(data interface{}, target ToGLTF, ctx *parserContext) {
-	if tc, ok := target.(ChildrunToGLTF); ok {
+func recurTo(data interface{}, target Specifier, ctx *parserContext) {
+	if tc, ok := target.(Parents); ok {
 		for i := 0; i < tc.LenChild(); i++ {
 			child := tc.GetChild(i)
 			childData := child.To(ctx)
@@ -237,13 +263,13 @@ func recurTo(data interface{}, target ToGLTF, ctx *parserContext) {
 		}
 	}
 }
-func recurLink(root *GLTF, parent, data interface{}, target ToGLTF) error {
-	if tl, ok := target.(LinkToGLTF); ok {
+func recurLink(root *GLTF, parent, data interface{}, target Specifier) error {
+	if tl, ok := target.(Linker); ok {
 		if err := tl.Link(root, parent, data); err != nil {
 			return err
 		}
 	}
-	if tc, ok := target.(ChildrunToGLTF); ok {
+	if tc, ok := target.(Parents); ok {
 		for i := 0; i < tc.LenChild(); i++ {
 			if err := recurLink(root, data, tc.ImpleGetChild(i, data), tc.GetChild(i)); err != nil {
 				return err
