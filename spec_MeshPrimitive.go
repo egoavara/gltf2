@@ -17,6 +17,10 @@ type MeshPrimitive struct {
 	UserData interface{}
 }
 
+func (s *MeshPrimitive) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *MeshPrimitive) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -27,17 +31,17 @@ type SpecMeshPrimitive struct {
 	Material   *SpecGLTFID                   `json:"material"`   //
 	Mode       *Mode                         `json:"mode"`       // default(TRIANGLES)
 	Targets    []map[AttributeKey]SpecGLTFID `json:"targets"`    // [*]allow(POSITION, NORMAL, TANGENT)
-	Extensions *SpecExtensions                   `json:"extensions,omitempty"`
+	Extensions *SpecExtensions               `json:"extensions,omitempty"`
 	Extras     *Extras                       `json:"extras,omitempty"`
 }
 
-func (s *SpecMeshPrimitive) GetExtension() *SpecExtensions {
+func (s *SpecMeshPrimitive) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecMeshPrimitive) Scheme() string {
 	return SCHEME_MESH_PRIMITIVE
 }
-func (s *SpecMeshPrimitive) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecMeshPrimitive) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

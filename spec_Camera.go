@@ -13,6 +13,10 @@ type Camera struct {
 	Extras     *Extras
 }
 
+func (s *Camera) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Camera) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -31,10 +35,10 @@ type SpecCamera struct {
 	Perspective  *SpecCameraPerspective  `json:"perspective"`  // link(type)
 
 	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecCamera) GetExtension() *SpecExtensions {
+func (s *SpecCamera) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
@@ -65,7 +69,7 @@ func (s *SpecCamera) ImpleGetChild(i int, dst interface{}) interface{} {
 func (s *SpecCamera) Scheme() string {
 	return SCHEME_CAMERA
 }
-func (s *SpecCamera) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecCamera) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

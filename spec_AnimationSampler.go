@@ -14,25 +14,29 @@ type AnimationSampler struct {
 	UserData interface{}
 }
 
+func (s *AnimationSampler) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *AnimationSampler) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
 type SpecAnimationSampler struct {
-	Input         *SpecGLTFID    `json:"input"`         // required
-	Interpolation *Interpolation `json:"interpolation"` // default(LINEAR)
-	Output        *SpecGLTFID    `json:"output"`        // required, AnimationSampler.Output -> Accessor.ComponentType must(FLOAT or normalized integer)
-	Extensions    *SpecExtensions    `json:"extensions,omitempty"`
-	Extras        *Extras        `json:"extras,omitempty"`
+	Input         *SpecGLTFID     `json:"input"`         // required
+	Interpolation *Interpolation  `json:"interpolation"` // default(LINEAR)
+	Output        *SpecGLTFID     `json:"output"`        // required, AnimationSampler.Output -> Accessor.ComponentType must(FLOAT or normalized integer)
+	Extensions    *SpecExtensions `json:"extensions,omitempty"`
+	Extras        *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecAnimationSampler) GetExtension() *SpecExtensions {
+func (s *SpecAnimationSampler) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecAnimationSampler) Scheme() string {
 	return SCHEME_ANIMATION_SAMPLER
 }
-func (s *SpecAnimationSampler) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecAnimationSampler) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

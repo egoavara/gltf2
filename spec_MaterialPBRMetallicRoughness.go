@@ -15,6 +15,10 @@ type MaterialPBRMetallicRoughness struct {
 	Extras                   *Extras      `json:"extras,omitempty"`
 }
 
+func (s *MaterialPBRMetallicRoughness) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *MaterialPBRMetallicRoughness) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -25,11 +29,11 @@ type SpecMaterialPBRMetallicRoughness struct {
 	RoughnessFactor          *float32         `json:"roughnessFactor"` // default(1.0), range(0.0, 1.0)
 	BaseColorTexture         *SpecTextureInfo `json:"baseColorTexture"`
 	MetallicRoughnessTexture *SpecTextureInfo `json:"metallicRoughnessTexture"`
-	Extensions               *SpecExtensions      `json:"extensions,omitempty"`
+	Extensions               *SpecExtensions  `json:"extensions,omitempty"`
 	Extras                   *Extras          `json:"extras,omitempty"`
 }
 
-func (s *SpecMaterialPBRMetallicRoughness) GetExtension() *SpecExtensions {
+func (s *SpecMaterialPBRMetallicRoughness) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
@@ -92,7 +96,7 @@ func (s *SpecMaterialPBRMetallicRoughness) ImpleGetChild(i int, dst interface{})
 func (s *SpecMaterialPBRMetallicRoughness) Scheme() string {
 	return SCHEME_MATERIAL_PBR_METALLIC_ROUGHNESS
 }
-func (s *SpecMaterialPBRMetallicRoughness) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecMaterialPBRMetallicRoughness) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 
 	switch strictness {
 	case LEVEL3:

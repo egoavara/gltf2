@@ -9,5 +9,6 @@ var (
 	ErrorGLTFLink     = errors.New("glTFid link not found")
 	ErrorTask         = errors.New("Task fail")
 	ErrorParser       = errors.New("Parser error")
+	ErrorExtension    = errors.New("ExtensionKey error")
 	ErrorParserOption = errors.New("Parser option error")
 )

@@ -13,7 +13,7 @@ import (
 
 type Image interface {
 	Name() string
-	Extensions() *Extensions
+	ExtensionStructure
 	Extras() *Extras
 
 	Load(useCache bool) (img *image.RGBA, err error)
@@ -36,6 +36,10 @@ type URIImage struct {
 	extras     *Extras
 	// None spec
 	userData interface{}
+}
+
+func (s *URIImage) GetExtension() *Extensions {
+	return s.extensions
 }
 
 func (s *URIImage) SetExtension(extensions *Extensions) {
@@ -107,6 +111,10 @@ type BufferImage struct {
 	userData interface{}
 }
 
+func (s *BufferImage) GetExtension() *Extensions {
+	return s.extensions
+}
+
 func (s *BufferImage) SetExtension(extensions *Extensions) {
 	s.extensions = extensions
 }
@@ -171,14 +179,14 @@ type SpecImage struct {
 	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecImage) GetExtension() *SpecExtensions {
+func (s *SpecImage) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
 func (s *SpecImage) Scheme() string {
 	return SCHEME_IMAGE
 }
-func (s *SpecImage) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecImage) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

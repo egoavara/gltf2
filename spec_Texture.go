@@ -13,25 +13,29 @@ type Texture struct {
 	UserData interface{}
 }
 
+func (s *Texture) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Texture) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
 type SpecTexture struct {
-	Sampler    *SpecGLTFID `json:"sampler"`
-	Source     *SpecGLTFID `json:"source"`
-	Name       *string     `json:"name,omitempty"`
+	Sampler    *SpecGLTFID     `json:"sampler"`
+	Source     *SpecGLTFID     `json:"source"`
+	Name       *string         `json:"name,omitempty"`
 	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecTexture) GetExtension() *SpecExtensions {
+func (s *SpecTexture) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecTexture) Scheme() string {
 	return SCHEME_TEXTURE
 }
-func (s *SpecTexture) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecTexture) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

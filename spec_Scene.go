@@ -13,24 +13,28 @@ type Scene struct {
 	UserData interface{}
 }
 
+func (s *Scene) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Scene) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
 type SpecScene struct {
-	Nodes      []SpecGLTFID `json:"nodes"` // unique, minItem(1)
-	Name       *string      `json:"name,omitempty"`
-	Extensions *SpecExtensions  `json:"extensions,omitempty"`
-	Extras     *Extras      `json:"extras,omitempty"`
+	Nodes      []SpecGLTFID    `json:"nodes"` // unique, minItem(1)
+	Name       *string         `json:"name,omitempty"`
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecScene) GetExtension() *SpecExtensions {
+func (s *SpecScene) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecScene) Scheme() string {
 	return SCHEME_SCENE
 }
-func (s *SpecScene) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecScene) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

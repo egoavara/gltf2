@@ -52,14 +52,14 @@ type SpecCameraPerspective struct {
 	Extras      *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecCameraPerspective) GetExtension() *SpecExtensions {
+func (s *SpecCameraPerspective) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
 func (s *SpecCameraPerspective) Scheme() string {
 	return SCHEME_CAMERA_PERSPECTIVE
 }
-func (s *SpecCameraPerspective) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecCameraPerspective) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

@@ -26,4 +26,5 @@ const (
 	SCHEME_ANIMATION_CHANNEL               = "animation/channel"
 	SCHEME_ANIMATION_CHANNEL_TARGET        = "animation/channel/target"
 	SCHEME_EXTENSION                       = "extension"
+	SCHEME_SKIN                            = "skin"
 )

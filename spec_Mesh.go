@@ -15,6 +15,10 @@ type Mesh struct {
 	UserData interface{}
 }
 
+func (s *Mesh) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Mesh) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -27,13 +31,13 @@ type SpecMesh struct {
 	Extras     *Extras             `json:"extras,omitempty"`
 }
 
-func (s *SpecMesh) GetExtension() *SpecExtensions {
+func (s *SpecMesh) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecMesh) Scheme() string {
 	return SCHEME_MESH
 }
-func (s *SpecMesh) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecMesh) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

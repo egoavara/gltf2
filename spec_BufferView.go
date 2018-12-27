@@ -22,6 +22,10 @@ type BufferView struct {
 	UserData interface{}
 }
 
+func (s *BufferView) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *BufferView) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -49,23 +53,23 @@ func (s *BufferView) LoadReader() (io.Reader, error) {
 }
 
 type SpecBufferView struct {
-	Buffer     *SpecGLTFID `json:"buffer"`     // required
-	ByteOffset *int        `json:"byteOffset"` // default(0), min(0)
-	ByteLength *int        `json:"ByteLength"` // required, min(1)
-	ByteStride *int        `json:"byteStride"` // range(4, 252, step=4) ! default(0) : not spec, but can be
-	Target     *BufferType `json:"target"`     //
-	Name       *string     `json:"name,omitempty"`
+	Buffer     *SpecGLTFID     `json:"buffer"`     // required
+	ByteOffset *int            `json:"byteOffset"` // default(0), min(0)
+	ByteLength *int            `json:"ByteLength"` // required, min(1)
+	ByteStride *int            `json:"byteStride"` // range(4, 252, step=4) ! default(0) : not spec, but can be
+	Target     *BufferType     `json:"target"`     //
+	Name       *string         `json:"name,omitempty"`
 	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecBufferView) GetExtension() *SpecExtensions {
+func (s *SpecBufferView) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecBufferView) Scheme() string {
 	return SCHEME_BUFFERVIEW
 }
-func (s *SpecBufferView) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecBufferView) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		if s.ByteStride != nil && *s.ByteStride < 4 && *s.ByteStride > 252 && *s.ByteStride%4 == 0 {

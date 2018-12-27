@@ -6,8 +6,8 @@ import (
 
 // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/glTF.schema.json
 type GLTF struct {
-	ExtensionsUsed     []*Extension
-	ExtensionsRequired []*Extension
+	ExtensionsUsed     []string
+	ExtensionsRequired []string
 	Accessors          []*Accessor
 	Asset              Asset
 	Buffers            []*Buffer
@@ -22,11 +22,16 @@ type GLTF struct {
 	Scenes             []*Scene
 	Textures           []*Texture
 	Animations         []*Animation
+	Skins              []*Skin
 	Extensions         *Extensions
 	Extras             *Extras
 
 	// None spec
 	UserData interface{}
+}
+
+func (s *GLTF) GetExtension() *Extensions {
+	return s.Extensions
 }
 
 func (s *GLTF) SetExtension(extensions *Extensions) {
@@ -50,9 +55,9 @@ type SpecGLTF struct {
 	Scenes             []SpecScene      `json:"scenes,omitempty"`             // minitem(1)
 	Textures           []SpecTexture    `json:"textures,omitempty"`           // minitem(1)
 	Animations         []SpecAnimation  `json:"animations,omitempty"`         // minitem(1)
-	// TODO : Skins              []Skin       `json:"skins,omitempty"`              // minitem(1)
-	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras         `json:"extras,omitempty"`
+	Skins              []SpecSkin       `json:"skins,omitempty"`              // minitem(1)
+	Extensions         *SpecExtensions  `json:"extensions,omitempty"`
+	Extras             *Extras          `json:"extras,omitempty"`
 	//
 	cache []int
 }
@@ -100,6 +105,9 @@ func (s *SpecGLTF) buildSchemeIndexCache() {
 
 	temp += len(s.Animations)
 	lengths = append(lengths, temp)
+
+	temp += len(s.Skins)
+	lengths = append(lengths, temp)
 	//
 	s.cache = lengths
 }
@@ -137,6 +145,8 @@ func (s *SpecGLTF) getSchemeIndex(i int) (scheme string, schemeIndex int) {
 				scheme = SCHEME_TEXTURE
 			case 12:
 				scheme = SCHEME_ANIMATION
+			case 13:
+				scheme = SCHEME_SKIN
 			}
 			break
 		}
@@ -144,13 +154,13 @@ func (s *SpecGLTF) getSchemeIndex(i int) (scheme string, schemeIndex int) {
 	return
 }
 
-func (s *SpecGLTF) GetExtension() *SpecExtensions {
+func (s *SpecGLTF) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecGLTF) Scheme() string {
 	return SCHEME_GLTF
 }
-func (s *SpecGLTF) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecGLTF) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough
@@ -171,16 +181,14 @@ func (s *SpecGLTF) Syntax(strictness Strictness, root interface{}) error {
 		if s.Asset == nil {
 			return errors.Errorf("GLTF.Asset required")
 		}
-		if ok, name := extExists(s.ExtensionsRequired...); !ok {
-			return errors.Errorf("GLTF.ExtensionsRequired has unknown '%s'", name)
-		}
 	}
 	return nil
 }
 func (s *SpecGLTF) To(ctx *parserContext) interface{} {
 	res := new(GLTF)
-	res.ExtensionsUsed = extNames(s.ExtensionsUsed...)
-	res.ExtensionsRequired = extNames(s.ExtensionsUsed...)
+	//
+	res.ExtensionsRequired = s.ExtensionsRequired
+	res.ExtensionsUsed = s.ExtensionsUsed
 	//
 	res.Accessors = make([]*Accessor, len(s.Accessors))
 	res.Buffers = make([]*Buffer, len(s.Buffers))
@@ -194,6 +202,7 @@ func (s *SpecGLTF) To(ctx *parserContext) interface{} {
 	res.Scenes = make([]*Scene, len(s.Scenes))
 	res.Textures = make([]*Texture, len(s.Textures))
 	res.Animations = make([]*Animation, len(s.Animations))
+	res.Skins = make([]*Skin, len(s.Skins))
 	//
 	res.Extras = s.Extras
 	return res
@@ -236,6 +245,8 @@ func (s *SpecGLTF) GetChild(i int) Specifier {
 		return &s.Textures[schemeIndex]
 	case SCHEME_ANIMATION:
 		return &s.Animations[schemeIndex]
+	case SCHEME_SKIN:
+		return &s.Skins[schemeIndex]
 	}
 	return nil
 }
@@ -268,6 +279,8 @@ func (s *SpecGLTF) SetChild(i int, dst, object interface{}) {
 		dst.(*GLTF).Textures[schemeIndex] = object.(*Texture)
 	case SCHEME_ANIMATION:
 		dst.(*GLTF).Animations[schemeIndex] = object.(*Animation)
+	case SCHEME_SKIN:
+		dst.(*GLTF).Skins[schemeIndex] = object.(*Skin)
 	}
 }
 func (s *SpecGLTF) LenChild() int {
@@ -305,6 +318,8 @@ func (s *SpecGLTF) ImpleGetChild(i int, dst interface{}) interface{} {
 		return dst.(*GLTF).Textures[schemeIndex]
 	case SCHEME_ANIMATION:
 		return dst.(*GLTF).Animations[schemeIndex]
+	case SCHEME_SKIN:
+		return dst.(*GLTF).Skins[schemeIndex]
 	}
 	return nil
 }

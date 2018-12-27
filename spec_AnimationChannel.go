@@ -13,6 +13,10 @@ type AnimationChannel struct {
 	UserData interface{}
 }
 
+func (s *AnimationChannel) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *AnimationChannel) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -24,13 +28,13 @@ type SpecAnimationChannel struct {
 	Extras     *Extras                     `json:"extras,omitempty"`
 }
 
-func (s *SpecAnimationChannel) GetExtension() *SpecExtensions {
+func (s *SpecAnimationChannel) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecAnimationChannel) Scheme() string {
 	return SCHEME_ANIMATION_CHANNEL
 }
-func (s *SpecAnimationChannel) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecAnimationChannel) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

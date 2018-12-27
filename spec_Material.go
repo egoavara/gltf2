@@ -22,6 +22,10 @@ type Material struct {
 	UserData interface{}
 }
 
+func (s *Material) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Material) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -40,13 +44,13 @@ type SpecMaterial struct {
 	DoubleSided          *bool                             `json:"doubleSided"`     // default(false)
 }
 
-func (s *SpecMaterial) GetExtension() *SpecExtensions {
+func (s *SpecMaterial) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecMaterial) Scheme() string {
 	return SCHEME_MATERIAL
 }
-func (s *SpecMaterial) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecMaterial) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		// it was normally LEVEL1 strictness, but AlphaMode has default so it was LEVEL3

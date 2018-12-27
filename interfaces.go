@@ -2,15 +2,15 @@ package gltf2
 
 type Specifier interface {
 	Scheme() string
-	Syntax(strictness Strictness, root interface{}) error
+	Syntax(strictness Strictness, root Specifier, parent Specifier) error
 	To(ctx *parserContext) interface{}
-
 }
-type ExtensionGetter interface {
-	GetExtension() *SpecExtensions
+type ExtensionSpecifier interface {
+	SpecExtension() *SpecExtensions
 }
-type ExtensionSetter interface {
+type ExtensionStructure interface {
 	SetExtension(extensions *Extensions)
+	GetExtension() *Extensions
 }
 type Parents interface {
 	Specifier

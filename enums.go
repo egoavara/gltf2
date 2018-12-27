@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 type GLDefine interface {
 	GL() int32
 }
-
-// TODO : enum check
 
 type ComponentType int32
 
@@ -439,7 +438,6 @@ func (s Mode) String() string {
 	return "nil"
 }
 
-// TODO : Spec said custom Attribute Key start with underscore. ex) _TEMPERATURE
 type AttributeKey string
 
 const (
@@ -452,7 +450,9 @@ const (
 	JOINTS_0   AttributeKey = "JOINTS_0"
 	WEIGHTS_0  AttributeKey = "WEIGHTS_0"
 )
-
+func (s AttributeKey) IsCustom() bool {
+	return strings.HasPrefix(string(s), "_")
+}
 //func (s AttributeKey) AssociateType() ([]ComponentType, []AccessorType) {
 //
 //}
@@ -497,6 +497,7 @@ func (s MinFilter) IsMipmap() bool {
 	}
 	return false
 }
+
 // gl.h
 const (
 	MIN_NEAREST MinFilter = 9728

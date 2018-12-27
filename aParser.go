@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/iamGreedy/glog"
-
 	"github.com/pkg/errors"
 	"io"
 	"log"
@@ -18,7 +17,7 @@ type parser struct {
 	src    *SpecGLTF
 	parsed bool
 	// extension support
-	exts []*Extension
+	exts []ExtensionType
 	//
 	cause error
 	err   error
@@ -30,7 +29,7 @@ type parser struct {
 	// + logging task
 	logger *glog.Glogger
 	//
-	pres []PreTask
+	pres  []PreTask
 	posts []PostTask
 }
 
@@ -66,7 +65,7 @@ func (s *parser) Tasks(tasks ...Task) *parser {
 	}
 	return s
 }
-func (s *parser) Extensions(exts ... *Extension) *parser {
+func (s *parser) Extensions(exts ...ExtensionType) *parser {
 	s.exts = append(s.exts, exts...)
 	return s
 }
@@ -150,11 +149,19 @@ func (s *parser) Parse() (*GLTF, error) {
 	//====================================================//
 	// extension used
 	for _, v := range s.src.ExtensionsRequired {
-		if !inExtension(v, s.exts){
-			s.setCauseError(ErrorParser, errors.Errorf("Extension : '%s' not support", v))
+		if !inExtension(v, s.exts) {
+			s.setCauseError(ErrorExtension, errors.Errorf("ExtensionKey : '%s' not support", v))
 			return nil, s.Error()
 		}
 	}
+	//====================================================//
+	// extension parse here
+	s.logger.Println("extension json decode start...")
+	if err := recurPostJson(s.src, s.exts); err != nil {
+		s.setCauseError(ErrorExtension, err)
+		return nil, s.Error()
+	}
+	s.logger.Println("extension json decode complete")
 	//====================================================//
 	// pre Task
 	if s.pres != nil {
@@ -169,7 +176,7 @@ func (s *parser) Parse() (*GLTF, error) {
 	// Syntax check
 	s.logger.Println("syntax check")
 	s.logger.Printf("syntax strictness : %v \n", s.strictness)
-	if err := recurSyntax(s.src, s.src, s.strictness); err != nil {
+	if err := recurSyntax(s.src, nil, s.src, s.strictness); err != nil {
 		s.setCauseError(ErrorGLTFSpec, err)
 		return nil, s.Error()
 	}
@@ -219,34 +226,61 @@ func Parser() *parser {
 	return res
 }
 
-func recurSyntax(root, target Specifier, strictness Strictness) error {
-	if target == nil{
+func recurPostJson(target Specifier, exts []ExtensionType) error {
+	if target == nil {
 		return nil
 	}
-	if err := target.Syntax(strictness, root); err != nil {
-		return err
-	}
 	//// extension
-	if g, ok := target.(ExtensionGetter); ok{
-		if ext := g.GetExtension(); ext != nil{
+	if g, ok := target.(ExtensionSpecifier); ok {
+		if ext := g.SpecExtension(); ext != nil {
+			var delList []string
 			for k, v := range *ext {
-				fmt.Println(k)
-				fmt.Println(v)
+				if exk := extFindByName(k, exts...); exk != nil {
+					var err error
+					v.data, err = exk.Constructor(v.src)
+					if err != nil {
+						return err
+					}
+				} else {
+					delList = append(delList, k)
+				}
+			}
+			for _, v := range delList {
+				delete(*ext, v)
 			}
 		}
-	//	exts := g.GetExtension()
-	//	for k, v := range *exts {
-	//		if ext := extName(k); ext != nil{
-	//			ext.
-	//		}else {
-	//
-	//		}
-	//	}
 	}
 	//
 	if tc, ok := target.(Parents); ok {
 		for i := 0; i < tc.LenChild(); i++ {
-			if err := recurSyntax(root, tc.GetChild(i), strictness); err != nil {
+			if err := recurPostJson(tc.GetChild(i), exts); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+func recurSyntax(root, parent, target Specifier, strictness Strictness) error {
+	if target == nil {
+		return nil
+	}
+	if err := target.Syntax(strictness, root, parent); err != nil {
+		return err
+	}
+	// extension
+	if g, ok := target.(ExtensionSpecifier); ok {
+		if ext := g.SpecExtension(); ext != nil {
+			for _, v := range *ext {
+				if err := v.data.Syntax(strictness, root, parent); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//
+	if tc, ok := target.(Parents); ok {
+		for i := 0; i < tc.LenChild(); i++ {
+			if err := recurSyntax(root, target, tc.GetChild(i), strictness); err != nil {
 				return err
 			}
 		}
@@ -254,8 +288,22 @@ func recurSyntax(root, target Specifier, strictness Strictness) error {
 	return nil
 }
 func recurTo(data interface{}, target Specifier, ctx *parserContext) {
+	if g, ok := target.(ExtensionSpecifier); ok {
+		var dataext = make(Extensions)
+		if specext := g.SpecExtension(); specext != nil {
+			for k, v := range *specext {
+				extk := extFindByName(k, ctx.ref.exts...)
+				extData := v.data.To(ctx)
+				recurTo(extData, v.data, ctx)
+				dataext[extk.ExtensionName()] = extData.(ExtensionType)
+			}
+		}
+		data.(ExtensionStructure).SetExtension(&dataext)
+	}
 	if tc, ok := target.(Parents); ok {
-		for i := 0; i < tc.LenChild(); i++ {
+		l := tc.LenChild()
+
+		for i := 0; i < l; i+= 1 {
 			child := tc.GetChild(i)
 			childData := child.To(ctx)
 			recurTo(childData, child, ctx)
@@ -267,6 +315,17 @@ func recurLink(root *GLTF, parent, data interface{}, target Specifier) error {
 	if tl, ok := target.(Linker); ok {
 		if err := tl.Link(root, parent, data); err != nil {
 			return err
+		}
+	}
+	if g, ok := target.(ExtensionSpecifier); ok {
+		specext := g.SpecExtension()
+		dataext := data.(ExtensionStructure).GetExtension()
+		if dataext != nil {
+			for k, v := range *dataext {
+				if err := recurLink(root, data, v, (*specext)[k].data); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	if tc, ok := target.(Parents); ok {

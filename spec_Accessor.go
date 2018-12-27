@@ -23,6 +23,10 @@ type Accessor struct {
 	UserData interface{}
 }
 
+func (s *Accessor) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Accessor) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -37,7 +41,6 @@ func (s *Accessor) SetExtension(extensions *Extensions) {
 //     slice := data.([][3]float)
 func (s *Accessor) SliceMapping(out_ptrslice interface{}, typeSafety, componentSafety bool) (interface{}, error) {
 	if s.BufferView.ByteStride != 0 && s.BufferView.ByteStride != s.ComponentType.Size()*s.Type.Count() {
-		// TODO
 		return nil, errors.New("SliceMapping ByteStride support not available")
 	}
 	bts, err := s.BufferView.Load()
@@ -151,7 +154,7 @@ func (s *Accessor) SliceMapping(out_ptrslice interface{}, typeSafety, componentS
 	header := (*reflect.SliceHeader)(unsafe.Pointer(vl.Pointer()))
 	header.Data = uintptr(unsafe.Pointer(&bts[0]))
 	header.Len = s.Count
-	if !typeSafety{
+	if !typeSafety {
 		header.Len *= s.Type.Count()
 	}
 	header.Cap = header.Len
@@ -176,17 +179,17 @@ type SpecAccessor struct {
 	Min           []float32       `json:"min,omitempty"`        // rangeitem(1, 16)
 	Sparse        *AccessorSparse `json:"sparse,omitempty"`
 	Name          *string         `json:"name,omitempty"`
-	Extensions    *SpecExtensions     `json:"extensions,omitempty"`
+	Extensions    *SpecExtensions `json:"extensions,omitempty"`
 	Extras        *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecAccessor) GetExtension() *SpecExtensions {
+func (s *SpecAccessor) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecAccessor) Scheme() string {
 	return SCHEME_ACCESSOR
 }
-func (s *SpecAccessor) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecAccessor) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		if s.ByteOffset != nil && *s.ByteOffset < 0 {
@@ -244,9 +247,7 @@ func (s *SpecAccessor) To(ctx *parserContext) interface{} {
 	return res
 }
 func (s *SpecAccessor) Link(Root *GLTF, parent interface{}, dst interface{}) error {
-	if s.BufferView == nil {
-		return errors.Errorf("Accessor.BufferView nil")
-	} else {
+	if s.BufferView != nil {
 		if !inRange(*s.BufferView, len(Root.BufferViews)) {
 			return errors.Errorf("Accessor.BufferView linking fail, %s", *s.BufferView)
 		}

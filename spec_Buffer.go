@@ -13,6 +13,7 @@ import (
 type Buffer struct {
 	// nullable
 	cache []byte
+	unavailableURI bool
 	//
 	URI *URI
 	// If it was nil, it automatically assume size
@@ -24,13 +25,20 @@ type Buffer struct {
 	UserData interface{}
 }
 
+func (s *Buffer) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Buffer) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
-func (s *Buffer) Load(useCache bool) (bts []byte, err error) {
+func (s *Buffer) Load(storeCache bool) (bts []byte, err error) {
 	if s.IsCached() {
 		return s.Cache(), nil
+	}
+	if s.unavailableURI{
+		return nil, errors.New("Unavailable URI flag setup")
 	}
 	// setup 'bts'
 	if s.URI == nil {
@@ -55,10 +63,18 @@ func (s *Buffer) Load(useCache bool) (bts []byte, err error) {
 		bts = bts[:*s.ByteLength]
 	}
 	// cache
-	if useCache {
+	if storeCache {
 		// setup cache
 		s.cache = bts
 	}
+	return bts, nil
+}
+func (s *Buffer) Modify() ([]byte, error) {
+	bts, err := s.Load(true)
+	if err != nil {
+		return nil, err
+	}
+	s.unavailableURI = true
 	return bts, nil
 }
 func (s *Buffer) Cache() []byte {
@@ -79,13 +95,13 @@ type SpecBuffer struct {
 	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecBuffer) GetExtension() *SpecExtensions {
+func (s *SpecBuffer) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecBuffer) Scheme() string {
 	return SCHEME_BUFFER
 }
-func (s *SpecBuffer) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecBuffer) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		if *s.ByteLength < 1 {

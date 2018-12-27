@@ -30,7 +30,7 @@ func (s *OrthographicCamera) UserData() interface{} {
 }
 
 func (s *OrthographicCamera) SetUserData(data interface{}) {
-	s.userData =data
+	s.userData = data
 }
 
 func (s *OrthographicCamera) View(monitorSize image.Point) mgl32.Mat4 {
@@ -41,22 +41,22 @@ func (s *OrthographicCamera) CameraType() CameraType {
 }
 
 type SpecCameraOrthographic struct {
-	Xmag       *float32    `json:"xmag"`  // required, not(0.0)
-	Ymag       *float32    `json:"ymag"`  // required, not(0.0)
-	Znear      *float32    `json:"znear"` // required, minimum(0.0)
-	Zfar       *float32    `json:"zfar"`  // required, larger(0.0), larger(znear)
+	Xmag       *float32        `json:"xmag"`  // required, not(0.0)
+	Ymag       *float32        `json:"ymag"`  // required, not(0.0)
+	Znear      *float32        `json:"znear"` // required, minimum(0.0)
+	Zfar       *float32        `json:"zfar"`  // required, larger(0.0), larger(znear)
 	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecCameraOrthographic) GetExtension() *SpecExtensions {
+func (s *SpecCameraOrthographic) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
 func (s *SpecCameraOrthographic) Scheme() string {
 	return SCHEME_CAMERA_ORTHOGRAPHIC
 }
-func (s *SpecCameraOrthographic) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecCameraOrthographic) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

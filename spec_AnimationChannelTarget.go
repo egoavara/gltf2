@@ -11,31 +11,34 @@ type AnimationChannelTarget struct {
 	Extras     *Extras
 }
 
+func (s *AnimationChannelTarget) GetExtension() *Extensions {
+	return s.Extensions
+}
 func (s *AnimationChannelTarget) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
 type SpecAnimationChannelTarget struct {
-	Node       *SpecGLTFID `json:"node"`
-	Path       *Path       `json:"path"` // required
+	Node       *SpecGLTFID     `json:"node"`
+	Path       *Path           `json:"path"` // required
 	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecAnimationChannelTarget) GetExtension() *SpecExtensions {
+func (s *SpecAnimationChannelTarget) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
-
 func (s *SpecAnimationChannelTarget) Scheme() string {
 	return SCHEME_ANIMATION_CHANNEL_TARGET
 }
-func (s *SpecAnimationChannelTarget) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecAnimationChannelTarget) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough
 	case LEVEL2:
 		// TODO
 		// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#animations target.Path constraint
+		// parent.(*SpecAnimationChannel)
 		fallthrough
 	case LEVEL1:
 		if s.Path == nil {

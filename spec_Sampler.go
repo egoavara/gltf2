@@ -14,6 +14,10 @@ type Sampler struct {
 	UserData interface{}
 }
 
+func (s *Sampler) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *Sampler) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -33,18 +37,18 @@ type SpecSampler struct {
 	WrapS     *Wrap      `json:"wrapS"`     // notspec default(REPEAT) : [https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtm]
 	WrapT     *Wrap      `json:"wrapT"`     // notspec default(REPEAT) : [https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtm]
 
-	Name       *string     `json:"name,omitempty"`
+	Name       *string         `json:"name,omitempty"`
 	Extensions *SpecExtensions `json:"extensions,omitempty"`
-	Extras     *Extras     `json:"extras,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecSampler) GetExtension() *SpecExtensions {
+func (s *SpecSampler) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecSampler) Scheme() string {
 	return SCHEME_SAMPLER
 }
-func (s *SpecSampler) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecSampler) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

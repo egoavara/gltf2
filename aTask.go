@@ -8,6 +8,7 @@ import (
 	"github.com/iamGreedy/essence/prefix"
 	"github.com/iamGreedy/glog"
 	"github.com/labstack/gommon/bytes"
+	"github.com/pkg/errors"
 	"math"
 	"net/url"
 )
@@ -134,15 +135,12 @@ var Tasks = struct {
 	ModelScale     func(axis axis.Axis, meter meter.Meter) Task
 	// Set bufferView.Target NEED_TO_DEFINE_BUFFER to real gl.h enum
 	AutoBufferTarget Task
-
-	// TODO TightPacking
-	// - make buffer view no stride
+	// make accessor no stride
+	TightPacking Task
+	// TODO UnpackDracoMesh
 	// TODO Clean Task
 	// - Dangling Node
 	// - Unreferenced Buffer, Image
-	// TODO :Trim Task
-	// Merge all buffers if there are many buffers
-	// Task<SplitBuffer> exist, Parser occur error
 	// TODO :MergeBuffer Task
 	// Merge all buffers if there are many buffers
 	// It is separated by Accessor
@@ -153,15 +151,20 @@ var Tasks = struct {
 	// TODO : BuildNormal Task
 	// TODO : BuildTangent Task
 }{
+	// Simple Task
 	HelloWorld: FnPreTask("Hello, World", func(parser *parserContext, gltf *SpecGLTF, logger *glog.Glogger) {
 		logger.Println("Hello, World")
 	}),
+	// Simple Task
 	ByeWorld: FnPostTask("Bye, World", func(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
 		logger.Println("Bye, World")
 		return nil
 	}),
+	// Caching Task
 	BufferCaching: FnPostTask("Buffer Caching", _BufferCaching),
-	ImageCaching:  FnPostTask("Image Caching", _ImageCaching),
+	// Caching Task
+	ImageCaching: FnPostTask("Image Caching", _ImageCaching),
+	// Caching Task
 	Caching: FnPostTask("Caching", func(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
 		if err := _BufferCaching(parser, gltf, logger); err != nil {
 			return err
@@ -171,10 +174,13 @@ var Tasks = struct {
 		}
 		return nil
 	}),
-
+	// Accessor Task
 	AccessorMinMax: FnPostTask("Accessor Min Max", func(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
 		for i, accessor := range gltf.Accessors {
 			if len(accessor.Min) > 0 && len(accessor.Max) > 0 {
+				continue
+			}
+			if accessor.BufferView == nil {
 				continue
 			}
 			var (
@@ -324,15 +330,110 @@ var Tasks = struct {
 		}
 		return nil
 	}),
+
+	// Accessor Task
+	TightPacking: FnPostTask("TightPacking", func(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
+		// TODO not yet tested
+		// Condition check
+		// Do not access the same part of buffer from another accessor.
+		// Do not access the same bufferView from another accessor.
+		// Each Buffer must be cached
+		for i := 0; i < len(gltf.Accessors); i++ {
+			a := gltf.Accessors[i]
+			_, err := a.BufferView.Buffer.Modify()
+			if err != nil {
+				return err
+			}
+			for j := i + 1; j < len(gltf.Accessors); j++ {
+				b := gltf.Accessors[j]
+				if a.BufferView == b.BufferView {
+					return errors.Errorf("Overlap")
+				}
+				if a.BufferView.Buffer == b.BufferView.Buffer {
+					af := a.BufferView.ByteOffset
+					at := a.BufferView.ByteOffset + a.BufferView.ByteLength
+					bf := b.BufferView.ByteOffset
+					bt := b.BufferView.ByteOffset + b.BufferView.ByteLength
+
+					if af >= bf{
+						if bt - af <= 0{
+							return errors.Errorf("Overlap")
+						}
+					}else{
+						if at - bf <= 0{
+							return errors.Errorf("Overlap")
+						}
+					}
+				}
+			}
+		}
+		//
+		for i, v := range gltf.Accessors {
+			if v.BufferView.ByteStride != 0{
+				if len(v.Name) > 0{
+					logger.Println("gltf.Accessor['%s']", v.Name)
+				}else {
+					logger.Println("gltf.Accessor[%d]", i)
+				}
+				inner := logger.Indent()
+				var lineDataCount int
+				var lineLength = v.Count
+				switch v.Type {
+				case SCALAR:
+					lineDataCount = 1
+				case VEC2:
+					lineDataCount = 2
+				case VEC3:
+					lineDataCount = 3
+				case VEC4:
+					lineDataCount = 4
+				case MAT2:
+					lineDataCount = 2
+					lineLength *= 2
+				case MAT3:
+					lineDataCount = 3
+					lineLength *= 3
+				case MAT4:
+					lineDataCount = 4
+					lineLength *= 4
+				}
+				var (
+					tightBlockSize = lineDataCount * v.ComponentType.Size()
+					leftBlockSize = tightBlockSize % v.BufferView.ByteStride
+					blockSize = tightBlockSize + leftBlockSize
+				)
+				inner.Printf("Block[%d/%d/%d]", tightBlockSize, leftBlockSize, blockSize)
+				if leftBlockSize == 0{
+					inner.Println("No need to packing")
+					v.BufferView.ByteStride = 0
+				}else {
+					var wrtOffset = v.BufferView.ByteOffset + v.ByteOffset
+					var rdOffset = v.BufferView.ByteOffset + v.ByteOffset
+					for i := 0; i < lineLength; i++ {
+						copy(v.BufferView.Buffer.cache[wrtOffset:], v.BufferView.Buffer.cache[rdOffset:rdOffset + tightBlockSize])
+						wrtOffset += tightBlockSize
+						rdOffset += blockSize
+					}
+					v.BufferView.ByteStride = 0
+					v.BufferView.ByteLength = wrtOffset - v.ByteOffset
+					inner.Println("Packing complete")
+				}
+			}
+		}
+		return nil
+	}),
+	// Node Task
 	ModelAlign: func(x align.Align, y align.Align, z align.Align) Task {
 		return &modelAlign{x: x, y: y, z: z}
 	},
+	// Node Task
 	ModelScale: func(axis axis.Axis, meter meter.Meter) Task {
 		return &modelScale{
 			len:  meter,
 			axis: axis,
 		}
 	},
+	// BufferView Task
 	AutoBufferTarget: FnPreTask("Auto Buffer Target", func(parser *parserContext, gltf *SpecGLTF, logger *glog.Glogger) {
 		for _, mesh := range gltf.Meshes {
 			for _, prim := range mesh.Primitives {
@@ -375,6 +476,7 @@ var Tasks = struct {
 			}
 		}
 	}),
+
 }
 
 type modelAlign struct {
@@ -388,13 +490,11 @@ func (s *modelAlign) TaskName() string {
 }
 func (s *modelAlign) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
 	for i, node := range gltf.Nodes {
-
 		min, max, ok := uMinMax(node)
 		if !ok {
 			continue
 		}
 		if node.Parent != nil {
-
 			continue
 		}
 		if len(node.Name) > 0 {
@@ -503,45 +603,7 @@ func (s *modelScale) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Gl
 	return nil
 }
 
-// [!] TODO : not work when multiple node use one mesh
-func uTransform(node *Node, trans mgl32.Mat4) {
 
-	recurTransform(node, node.Transform(), trans)
-}
-func recurTransform(node *Node, mtx mgl32.Mat4, trans mgl32.Mat4) {
-	mtx = mtx.Mul4(node.Transform())
-	temp := mtx.Inv().Mul4(trans).Mul4(mtx)
-	if node.Mesh != nil {
-		for _, prim := range node.Mesh.Primitives {
-			posattr := prim.Attributes[POSITION]
-			poss := posattr.MustSliceMapping(new([]mgl32.Vec3), true, true).([]mgl32.Vec3)
-			//
-			for i, v := range poss {
-				//m := mtx.Mul4x1(v.Vec4(1))
-				//mt := trans.Mul4x1(m)
-				//mti := mtx.Inv().Mul4x1(mt)
-				//poss[i] = mti.Vec3()
-				poss[i] = temp.Mul4x1(v.Vec4(1)).Vec3()
-			}
-			if len(posattr.Min) > 0 {
-				temp := temp.Mul4x1(mgl32.Vec4{posattr.Min[0], posattr.Min[1], posattr.Min[2], 1})
-				posattr.Min[0] = temp[0]
-				posattr.Min[1] = temp[1]
-				posattr.Min[2] = temp[2]
-			}
-			if len(posattr.Max) > 0 {
-				temp := temp.Mul4x1(mgl32.Vec4{posattr.Max[0], posattr.Max[1], posattr.Max[2], 1})
-				posattr.Max[0] = temp[0]
-				posattr.Max[1] = temp[1]
-				posattr.Max[2] = temp[2]
-			}
-		}
-	}
-	//
-	for _, child := range node.Children {
-		recurTransform(child, mtx, trans)
-	}
-}
 func uMinMax(node *Node) (min, max mgl32.Vec3, ok bool) {
 	min = mgl32.Vec3{math.MaxFloat32, math.MaxFloat32, math.MaxFloat32}
 	max = mgl32.Vec3{-math.MaxFloat32, -math.MaxFloat32, -math.MaxFloat32}

@@ -22,9 +22,9 @@ func isUniqueGLTFID(datas ...SpecGLTFID) (bool, SpecGLTFID) {
 	return true, 0
 }
 
-func inExtension(a string, exts []*Extension) bool{
+func inExtension(a string, exts []ExtensionType) bool {
 	for _, v := range exts {
-		if v.Name == a{
+		if v.ExtensionName() == a {
 			return true
 		}
 	}

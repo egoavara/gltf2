@@ -1,6 +1,9 @@
 package gltf2
 
-import "github.com/go-gl/mathgl/mgl32"
+import (
+	"encoding/json"
+	"github.com/go-gl/mathgl/mgl32"
+)
 
 type KHRMaterialsPBRSpecularGlossiness struct {
 	DiffuseFactor             mgl32.Vec4   `json:"diffuseFactor"` // default:[1.0,1.0,1.0,1.0]
@@ -8,6 +11,16 @@ type KHRMaterialsPBRSpecularGlossiness struct {
 	SpecularFactor            mgl32.Vec3   `json:"specularFactor"`   // default:[1.0,1.0,1.0]
 	GlossinessFactor          float32      `json:"glossinessFactor"` // default:1.0
 	SpecularGlossinessTexture *TextureInfo `json:"specularGlossinessTexture"`
+}
+func (s *KHRMaterialsPBRSpecularGlossiness) ExtensionName() string {
+	return "KHR_materials_pbrSpecularGlossiness"
+}
+func (s *KHRMaterialsPBRSpecularGlossiness) Constructor(src []byte) (Specifier, error) {
+	res := new(SpecKHRMaterialsPBRSpecularGlossiness)
+	if err := json.Unmarshal(src, res); err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 type SpecKHRMaterialsPBRSpecularGlossiness struct {
@@ -21,7 +34,7 @@ type SpecKHRMaterialsPBRSpecularGlossiness struct {
 func (s *SpecKHRMaterialsPBRSpecularGlossiness) Scheme() string {
 	return SCHEME_EXTENSION
 }
-func (s *SpecKHRMaterialsPBRSpecularGlossiness) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecKHRMaterialsPBRSpecularGlossiness) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	return nil
 }
 func (s *SpecKHRMaterialsPBRSpecularGlossiness) To(ctx *parserContext) interface{} {

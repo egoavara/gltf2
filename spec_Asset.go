@@ -17,7 +17,11 @@ type Asset struct {
 	Extras     *Extras
 }
 
-func (s *Asset) SetExtension(extensions *Extensions) {
+func (s Asset) GetExtension() *Extensions {
+	return s.Extensions
+}
+
+func (s Asset) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
@@ -34,18 +38,18 @@ type SpecAsset struct {
 	Generator  *string          `json:"generator,omitempty"`
 	Version    *version.Version `json:"version"` // required
 	MinVersion *version.Version `json:"minVersion,omitempty"`
-	Extensions *SpecExtensions      `json:"extensions,omitempty"`
+	Extensions *SpecExtensions  `json:"extensions,omitempty"`
 	Extras     *Extras          `json:"extras,omitempty"`
 }
 
-func (s *SpecAsset) GetExtension() *SpecExtensions {
+func (s *SpecAsset) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
 func (s *SpecAsset) Scheme() string {
 	return SCHEME_ASSET
 }
-func (s *SpecAsset) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecAsset) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

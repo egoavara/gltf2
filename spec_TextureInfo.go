@@ -11,24 +11,28 @@ type TextureInfo struct {
 	Extras     *Extras
 }
 
+func (s *TextureInfo) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *TextureInfo) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
 
 type SpecTextureInfo struct {
-	Index      *SpecGLTFID    `json:"index"`    // required
-	TexCoord   *IndexTexCoord `json:"texCoord"` // default(0), minimum(0)
-	Extensions *SpecExtensions    `json:"extensions,omitempty"`
-	Extras     *Extras        `json:"extras,omitempty"`
+	Index      *SpecGLTFID     `json:"index"`    // required
+	TexCoord   *IndexTexCoord  `json:"texCoord"` // default(0), minimum(0)
+	Extensions *SpecExtensions `json:"extensions,omitempty"`
+	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecTextureInfo) GetExtension() *SpecExtensions {
+func (s *SpecTextureInfo) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 func (s *SpecTextureInfo) Scheme() string {
 	return SCHEME_TEXTURE_INFO
 }
-func (s *SpecTextureInfo) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecTextureInfo) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 	switch strictness {
 	case LEVEL3:
 		fallthrough

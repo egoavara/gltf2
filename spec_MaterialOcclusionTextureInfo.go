@@ -12,6 +12,10 @@ type MaterialOcclusionTextureInfo struct {
 	Extras     *Extras
 }
 
+func (s *MaterialOcclusionTextureInfo) GetExtension() *Extensions {
+	return s.Extensions
+}
+
 func (s *MaterialOcclusionTextureInfo) SetExtension(extensions *Extensions) {
 	s.Extensions = extensions
 }
@@ -24,14 +28,14 @@ type SpecMaterialOcclusionTextureInfo struct {
 	Extras     *Extras         `json:"extras,omitempty"`
 }
 
-func (s *SpecMaterialOcclusionTextureInfo) GetExtension() *SpecExtensions {
+func (s *SpecMaterialOcclusionTextureInfo) SpecExtension() *SpecExtensions {
 	return s.Extensions
 }
 
 func (s *SpecMaterialOcclusionTextureInfo) Scheme() string {
 	return SCHEME_MATERIAL_OCCLUSION_TEXTUREINFO
 }
-func (s *SpecMaterialOcclusionTextureInfo) Syntax(strictness Strictness, root interface{}) error {
+func (s *SpecMaterialOcclusionTextureInfo) Syntax(strictness Strictness, root Specifier, parent Specifier) error {
 
 	switch strictness {
 	case LEVEL3:
