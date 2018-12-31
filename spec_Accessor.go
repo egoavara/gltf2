@@ -39,19 +39,25 @@ func (s *Accessor) SetExtension(extensions *Extensions) {
 //
 // ex) data, err := <Accessor>.SliceMapping(new([][3]float), true)
 //     slice := data.([][3]float)
+func (s *Accessor) RawMap() ([]byte, error) {
+	bts, err := s.BufferView.Load()
+	if err != nil {
+		return nil, err
+	}
+	bts = bts[s.ByteOffset:s.ByteOffset + s.Count * s.Type.Count() * s.ComponentType.Size()]
+	return bts, nil
+}
 func (s *Accessor) SliceMapping(out_ptrslice interface{}, typeSafety, componentSafety bool) (interface{}, error) {
 	if s.BufferView.ByteStride != 0 && s.BufferView.ByteStride != s.ComponentType.Size()*s.Type.Count() {
 		return nil, errors.New("SliceMapping ByteStride support not available")
 	}
-	bts, err := s.BufferView.Load()
+	bts, err := s.RawMap()
 	if err != nil {
 		return nil, err
 	}
 	if len(bts) < 1 {
 		return reflect.ValueOf(out_ptrslice).Elem().Interface(), nil
 	}
-	//
-	bts = bts[s.ByteOffset:]
 	//
 	tp := reflect.TypeOf(out_ptrslice)
 	if tp.Kind() != reflect.Ptr && tp.Elem().Kind() == reflect.Slice {

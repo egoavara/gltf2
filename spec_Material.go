@@ -22,6 +22,19 @@ type Material struct {
 	UserData interface{}
 }
 
+func DefaultMaterial() *Material {
+	return &Material{
+		PBRMetallicRoughness:&MaterialPBRMetallicRoughness{
+			BaseColorFactor:mgl32.Vec4{1,1,1,1},
+			MetallicFactor:1,
+			RoughnessFactor:1,
+		},
+		EmissiveFactor:mgl32.Vec3{0,0,0},
+		AlphaMode: OPAQUE,
+		AlphaCutoff:.5,
+		DoubleSided:false,
+	}
+}
 func (s *Material) GetExtension() *Extensions {
 	return s.Extensions
 }

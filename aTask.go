@@ -490,6 +490,7 @@ func (s *modelAlign) TaskName() string {
 }
 func (s *modelAlign) PostLoad(parser *parserContext, gltf *GLTF, logger *glog.Glogger) error {
 	for i, node := range gltf.Nodes {
+		// TODO if node has skin
 		min, max, ok := uMinMax(node)
 		if !ok {
 			continue
