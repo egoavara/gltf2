@@ -153,7 +153,7 @@ const (
 	Translation Path = iota
 	Rotation    Path = iota
 	Scale       Path = iota
-	Weight      Path = iota
+	Weights     Path = iota
 )
 
 func (s Path) String() string {
@@ -164,8 +164,8 @@ func (s Path) String() string {
 		return "rotation"
 	case Scale:
 		return "scale"
-	case Weight:
-		return "weight"
+	case Weights:
+		return "weights"
 	}
 	return "nil"
 }
@@ -187,8 +187,8 @@ func (s *Path) UnmarshalJSON(data []byte) error {
 		*s = Rotation
 	case "scale":
 		*s = Scale
-	case "weight":
-		*s = Weight
+	case "weights":
+		*s = Weights
 	default:
 		return errors.WithMessage(ErrorEnum, fmt.Sprintf("'%s' is invalid Path", v))
 	}

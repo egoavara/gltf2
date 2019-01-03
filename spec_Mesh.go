@@ -45,7 +45,6 @@ func (s *SpecMesh) Syntax(strictness Strictness, root Specifier, parent Specifie
 
 		fallthrough
 	case LEVEL1:
-
 		if len(s.Primitives) < 0 {
 			return errors.Errorf("SpecMeshPrimitive.Primitives required")
 		}
